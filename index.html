@@ -1,0 +1,2048 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>统计工具</title>
+  <style>
+    :root {
+      --bg: #f3f7ff;
+      --bg-alt: #ebf2ff;
+      --card: rgba(255, 255, 255, 0.92);
+      --text: #0f172a;
+      --muted: #64748b;
+      --line: #d9e5f7;
+      --accent: #2563eb;
+      --accent-soft: #dbeafe;
+      --accent-strong: #1d4ed8;
+      --winner-border: #d97706;
+      --winner-bg: #fef3c7;
+      --profit: #166534;
+      --profit-bg: #dcfce7;
+      --loss: #b91c1c;
+      --loss-bg: #fee2e2;
+      --neutral: #475569;
+      --neutral-bg: #f1f5f9;
+      --shadow-soft: 0 12px 30px rgba(15, 23, 42, 0.08);
+      --shadow-hover: 0 16px 36px rgba(15, 23, 42, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Source Han Sans SC", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: var(--text);
+      background: radial-gradient(circle at 0% 0%, #e0f2fe 0%, transparent 42%),
+        radial-gradient(circle at 100% 0%, #dbeafe 0%, transparent 40%),
+        linear-gradient(145deg, var(--bg), var(--bg-alt));
+      min-height: 100vh;
+    }
+
+    .auth-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      background: linear-gradient(145deg, rgba(239, 246, 255, 0.95), rgba(219, 234, 254, 0.95));
+      backdrop-filter: blur(8px);
+    }
+
+    .auth-screen.hidden {
+      display: none;
+    }
+
+    .auth-card {
+      width: min(92vw, 380px);
+      border: 1px solid #bfdbfe;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.96);
+      box-shadow: 0 16px 34px rgba(15, 23, 42, 0.16);
+      padding: 18px 16px 16px;
+    }
+
+    .auth-title {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 800;
+      color: #1e3a8a;
+      text-align: center;
+    }
+
+    .auth-subtitle {
+      margin: 8px 0 14px;
+      font-size: 13px;
+      color: #64748b;
+      text-align: center;
+    }
+
+    .auth-card .field label {
+      text-align: center;
+    }
+
+    .auth-card .field {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .auth-input {
+      height: 50px !important;
+      display: block;
+      width: min(100%, 320px) !important;
+      margin: 0 auto;
+      font-size: 20px !important;
+      font-weight: 700;
+      text-align: center;
+      border: 2px solid #93c5fd !important;
+      border-radius: 12px !important;
+    }
+
+    .auth-input:focus {
+      box-shadow: 0 0 0 5px rgba(59, 130, 246, 0.2) !important;
+    }
+
+    .auth-submit {
+      max-width: 320px;
+      margin: 10px auto 0;
+      height: 44px;
+      display: block;
+    }
+
+    .auth-error {
+      min-height: 18px;
+      margin-top: 8px;
+      font-size: 12px;
+      color: #b91c1c;
+      text-align: center;
+    }
+
+    .page.page-locked {
+      display: none;
+    }
+
+    .page {
+      max-width: 1220px;
+      margin: 26px auto;
+      padding: 0 14px 30px;
+      position: relative;
+      z-index: 1;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 30px;
+      line-height: 1.2;
+      letter-spacing: 1px;
+    }
+
+    .page-subtitle {
+      margin: 8px 0 16px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow-soft);
+      backdrop-filter: blur(8px);
+      animation: panel-in 0.45s ease both;
+    }
+
+    .panel:nth-of-type(2) {
+      animation-delay: 0.04s;
+    }
+
+    .panel:nth-of-type(3) {
+      animation-delay: 0.08s;
+    }
+
+    .panel:nth-of-type(4) {
+      animation-delay: 0.12s;
+    }
+
+    @keyframes panel-in {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+    }
+
+    .controls-primary {
+      grid-template-columns: 1fr;
+      justify-content: stretch;
+    }
+
+    .field label {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .field.button-field {
+      display: flex;
+      align-items: flex-start;
+      padding-top: 25px;
+    }
+
+    .field.winning-field label {
+      color: #1e40af;
+      font-size: 14px;
+      letter-spacing: 0.2px;
+      text-align: center;
+    }
+
+    .winning-input {
+      height: 46px !important;
+      font-size: 24px !important;
+      font-weight: 800;
+      text-align: center;
+      letter-spacing: 1px;
+      color: #1e3a8a !important;
+      background: linear-gradient(180deg, #ffffff, #eff6ff) !important;
+      border: 2px solid #60a5fa !important;
+      box-shadow: 0 8px 20px rgba(37, 99, 235, 0.18);
+      width: 100%;
+    }
+
+    .winning-input:focus {
+      box-shadow: 0 0 0 5px rgba(59, 130, 246, 0.22), 0 10px 20px rgba(37, 99, 235, 0.2) !important;
+    }
+
+    input[type="number"],
+    input[type="text"] {
+      width: 100%;
+      height: 38px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 0 12px;
+      font-size: 14px;
+      background: #fff;
+      color: var(--text);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+    }
+
+    input[type="number"]:focus,
+    input[type="text"]:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.16);
+      transform: translateY(-1px);
+    }
+
+    select {
+      width: 100%;
+      height: 38px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 0 12px;
+      font-size: 14px;
+      background: #fff;
+      color: var(--text);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+    }
+
+    select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.16);
+      transform: translateY(-1px);
+    }
+
+    .multi-col-picker {
+      position: relative;
+    }
+
+    .multi-col-trigger {
+      width: 100%;
+      height: 38px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 0 12px;
+      font-size: 14px;
+      background: #fff;
+      color: var(--text);
+      cursor: pointer;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      text-align: left;
+    }
+
+    .multi-col-trigger:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.16);
+      transform: translateY(-1px);
+    }
+
+    .multi-col-trigger-text {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      min-width: 0;
+    }
+
+    .multi-col-trigger-arrow {
+      color: #64748b;
+      font-size: 12px;
+      line-height: 1;
+      transition: transform 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    .multi-col-picker.open .multi-col-trigger-arrow {
+      transform: rotate(180deg);
+    }
+
+    .multi-col-menu {
+      position: absolute;
+      z-index: 15;
+      left: 0;
+      right: 0;
+      top: calc(100% + 6px);
+      max-height: 220px;
+      overflow-y: auto;
+      border: 1px solid #bfdbfe;
+      border-radius: 10px;
+      background: #ffffff;
+      box-shadow: 0 14px 26px rgba(15, 23, 42, 0.15);
+      padding: 6px;
+      display: none;
+    }
+
+    .multi-col-picker.open .multi-col-menu {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 6px;
+    }
+
+    .multi-col-option {
+      border: 1px solid #dbeafe;
+      border-radius: 8px;
+      background: #f8fbff;
+      color: #334155;
+      font-size: 13px;
+      height: 30px;
+      padding: 0 6px;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .multi-col-option:hover {
+      border-color: #93c5fd;
+      background: #eff6ff;
+      color: #1e3a8a;
+    }
+
+    .multi-col-option.selected {
+      border-color: #2563eb;
+      background: #dbeafe;
+      color: #1e40af;
+      font-weight: 700;
+    }
+
+    .multi-col-select-hint {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.3;
+    }
+
+    .btn-clear {
+      width: 100%;
+      height: 38px;
+      border: 1px solid #d97706;
+      border-radius: 10px;
+      background: #fff7ed;
+      color: #9a3412;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.22s ease;
+    }
+
+    .btn-clear:hover {
+      background: #ffedd5;
+      transform: translateY(-1px);
+    }
+
+    .danger-zone {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px dashed #c7d2fe;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .danger-zone-note {
+      color: #64748b;
+      font-size: 12px;
+    }
+
+    .danger-zone .btn-clear {
+      width: auto;
+      min-width: 132px;
+      padding: 0 12px;
+      height: 34px;
+      font-size: 13px;
+    }
+
+    .btn-add {
+      width: 100%;
+      height: 38px;
+      border: 1px solid var(--accent-strong);
+      border-radius: 10px;
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      color: #ffffff;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.22s ease;
+      box-shadow: 0 8px 16px rgba(37, 99, 235, 0.25);
+    }
+
+    .btn-add:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 11px 20px rgba(37, 99, 235, 0.3);
+    }
+
+    .btn-add-outline {
+      width: 100%;
+      height: 38px;
+      border: 1px solid #3b82f6;
+      border-radius: 10px;
+      background: #ffffff;
+      color: #1d4ed8;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.22s ease;
+    }
+
+    .btn-add-outline:hover {
+      background: #eff6ff;
+      transform: translateY(-1px);
+    }
+
+    .btn-delete-row {
+      border: 1px solid #ef4444;
+      border-radius: 6px;
+      background: #fef2f2;
+      color: #b91c1c;
+      font-size: 12px;
+      padding: 4px 10px;
+      cursor: pointer;
+    }
+
+    .btn-delete-row:hover {
+      background: #fee2e2;
+    }
+
+    .column-scroll {
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .column-rows-viewport {
+      position: relative;
+    }
+
+    .column-rows-viewport.collapsed .column-scroll {
+      max-height: var(--first-row-height, 190px);
+    }
+
+    .column-rows-viewport.collapsed::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 24px;
+      background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.96));
+      pointer-events: none;
+    }
+
+    .column-fold-toggle-wrap {
+      margin-top: 10px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .column-fold-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      height: 34px;
+      border: 1px solid #bfdbfe;
+      border-radius: 999px;
+      background: #eff6ff;
+      color: #1d4ed8;
+      padding: 0 14px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .column-fold-toggle:hover {
+      background: #dbeafe;
+      transform: translateY(-1px);
+    }
+
+    .column-fold-toggle .arrow {
+      display: inline-block;
+      transition: transform 0.2s ease;
+    }
+
+    .column-fold-toggle[aria-expanded="true"] .arrow {
+      transform: rotate(180deg);
+    }
+
+    .column-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 90px);
+      gap: 10px;
+      width: max-content;
+    }
+
+    .col-card {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+      overflow: hidden;
+      min-width: 0;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 6px 12px rgba(15, 23, 42, 0.05);
+    }
+
+    .col-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 18px rgba(15, 23, 42, 0.1);
+    }
+
+    .col-head {
+      height: 38px;
+      display: grid;
+      place-items: center;
+      background: #eef2ff;
+      border-bottom: 1px solid var(--line);
+      font-weight: 600;
+    }
+
+    .col-card.mark-red .col-head {
+      background: #dc2626;
+      color: #fff7f7;
+    }
+
+    .col-card.mark-blue .col-head {
+      background: #2563eb;
+      color: #f8fbff;
+    }
+
+    .col-card.mark-green .col-head {
+      background: #16a34a;
+      color: #f7fff9;
+    }
+
+    .col-input-wrap {
+      margin: 0;
+      padding: 7px 5px;
+      background: transparent;
+      border: none;
+      border-radius: 0;
+    }
+
+    .col-input {
+      width: 100%;
+      min-height: 88px;
+      border: 1px solid #cfd4dc;
+      border-radius: 10px;
+      padding: 6px;
+      font-size: 13px;
+      line-height: 1.4;
+      color: var(--text);
+      resize: vertical;
+      font-family: inherit;
+      background: #fff;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .col-input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+    }
+
+    .col-values {
+      width: 100%;
+      height: 76px;
+      padding: 2px;
+      display: flex;
+      flex-direction: column;
+      flex-wrap: nowrap;
+      gap: 4px;
+      align-items: flex-start;
+      background: transparent;
+      min-width: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      scrollbar-width: thin;
+      scrollbar-color: #93c5fd #e2e8f0;
+    }
+
+    .col-value-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 1px 5px 1px 2px;
+      border-radius: 999px;
+      border: 1px solid #bfdbfe;
+      background: #eff6ff;
+      color: #1e3a8a;
+      font-size: 11px;
+      line-height: 1.4;
+      font-variant-numeric: tabular-nums;
+      max-width: 100%;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .col-value-seq {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 20px;
+      padding: 0 5px;
+      border-radius: 999px;
+      background: #1d4ed8;
+      color: #ffffff;
+      font-size: 10px;
+      font-weight: 700;
+      line-height: 1.3;
+      flex-shrink: 0;
+    }
+
+    .col-value-amount {
+      color: #1e3a8a;
+      white-space: nowrap;
+      overflow: visible;
+      text-overflow: clip;
+    }
+
+    .col-values-empty {
+      color: #94a3b8;
+      font-size: 12px;
+    }
+
+    .col-sum {
+      height: 38px;
+      padding: 0 4px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+      background: #eef2ff;
+    }
+
+    .col-card.winner {
+      border-color: var(--winner-border);
+      box-shadow: 0 0 0 2px rgba(217, 119, 6, 0.22);
+    }
+
+    .col-card.winner .col-head,
+    .col-card.winner .col-input-wrap,
+    .col-card.winner .col-sum {
+      background: var(--winner-bg);
+    }
+
+    .col-card.winner .col-head {
+      color: #7c2d12;
+      font-weight: 800;
+    }
+
+    @media (max-width: 768px) {
+      .page {
+        margin-top: 16px;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+
+      .page-subtitle {
+        font-size: 13px;
+      }
+
+      .col-values {
+        height: 70px;
+      }
+
+      .col-sum {
+        font-size: 13px;
+      }
+    }
+
+    @media (max-width: 1023px) {
+      .column-rows-viewport .column-scroll {
+        max-height: none !important;
+      }
+
+      .column-rows-viewport::after,
+      .column-fold-toggle-wrap {
+        display: none;
+      }
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .summary-item {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+      padding: 12px;
+      box-shadow: 0 6px 14px rgba(15, 23, 42, 0.06);
+    }
+
+    .summary-item .label {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .summary-item .value {
+      margin-top: 4px;
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .summary-item.final {
+      transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    }
+
+    .summary-item.final .value {
+      font-size: 24px;
+    }
+
+    .summary-item.final.profit {
+      border-color: #86efac;
+      background: var(--profit-bg);
+      color: var(--profit);
+    }
+
+    .summary-item.final.loss {
+      border-color: #fca5a5;
+      background: var(--loss-bg);
+      color: var(--loss);
+    }
+
+    .summary-item.final.neutral {
+      border-color: #cbd5e1;
+      background: var(--neutral-bg);
+      color: var(--neutral);
+    }
+
+    .panel-title {
+      margin: 0 0 10px;
+      font-size: 18px;
+      letter-spacing: 0.3px;
+    }
+
+    .quick-add-controls {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .field .hint {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.3;
+    }
+
+    .current-groups {
+      margin-bottom: 10px;
+      border: 1px dashed #93c5fd;
+      border-radius: 12px;
+      padding: 12px;
+      background: linear-gradient(180deg, #ffffff, #f4f8ff);
+    }
+
+    .current-groups-title {
+      margin: 0 0 8px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .current-groups-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .group-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #fff;
+      padding: 4px 8px;
+      font-size: 12px;
+    }
+
+    .group-chip.winner {
+      border-color: #2563eb;
+      background: #dbeafe;
+      color: #0f172a;
+      box-shadow: inset 0 0 0 1px rgba(37, 99, 235, 0.28);
+    }
+
+    .group-chip.winner .delete-group {
+      border-color: #93c5fd;
+      background: #ffffff;
+      color: #1d4ed8;
+    }
+
+    .group-chip .delete-group {
+      border: 1px solid #fecaca;
+      border-radius: 999px;
+      background: #fff1f2;
+      color: #b91c1c;
+      padding: 0 6px;
+      line-height: 1.3;
+      cursor: pointer;
+      font-size: 11px;
+    }
+
+    .group-chip .delete-group:hover {
+      background: #ffe4e6;
+    }
+
+    .row-result-table-wrap {
+      overflow-x: auto;
+    }
+
+    .row-result-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 760px;
+    }
+
+    .row-result-table th,
+    .row-result-table td {
+      border: 1px solid var(--line);
+      padding: 8px;
+      font-size: 13px;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+      background: #fff;
+    }
+
+    .row-result-table th {
+      background: #eef2ff;
+      font-weight: 600;
+    }
+
+    .row-result-table tbody tr:nth-child(even) td {
+      background: #fbfdff;
+    }
+
+    .row-result-table tbody tr.row-hit-winner td:not(.row-result-value) {
+      background: #eaf2ff;
+      border-color: #bfdbfe;
+      color: #0f172a;
+    }
+
+    .row-result-table tbody tr.row-hit-winner td:first-child {
+      box-shadow: inset 3px 0 0 #2563eb;
+      font-weight: 700;
+    }
+
+    .row-result-table tbody tr.row-hit-winner td.row-index-hit {
+      background: #2563eb !important;
+      color: #ffffff !important;
+      border-color: #1e40af !important;
+      box-shadow: none;
+      font-weight: 800;
+    }
+
+    .group-detail-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: center;
+    }
+
+    .group-detail-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #fff;
+      padding: 2px 6px 2px 2px;
+      white-space: nowrap;
+    }
+
+    .group-col-tag {
+      min-width: 24px;
+      border-radius: 999px;
+      padding: 1px 8px;
+      font-weight: 700;
+      border: 1px solid transparent;
+      background: #e2e8f0;
+      color: #334155;
+      text-align: center;
+    }
+
+    .group-col-tag.mark-red {
+      background: #b91c1c;
+      color: #fff7f7;
+      border-color: #991b1b;
+      font-weight: 800;
+    }
+
+    .group-col-tag.mark-blue {
+      background: #1d4ed8;
+      color: #f8fbff;
+      border-color: #1e40af;
+      font-weight: 800;
+    }
+
+    .group-col-tag.mark-green {
+      background: #15803d;
+      color: #f7fff9;
+      border-color: #166534;
+      font-weight: 800;
+    }
+
+    .group-col-tag.winner {
+      box-shadow: 0 0 0 2px rgba(217, 119, 6, 0.25);
+      border-color: #d97706;
+    }
+
+    .group-amount-text {
+      color: #334155;
+    }
+
+    .group-detail-remove {
+      width: 18px;
+      height: 18px;
+      border: 1px solid #fecaca;
+      border-radius: 999px;
+      background: #fff1f2;
+      color: #b91c1c;
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1;
+      padding: 0;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .group-detail-remove:hover {
+      background: #ffe4e6;
+      border-color: #fda4af;
+    }
+
+    .group-inline-add {
+      display: inline-flex;
+      align-items: center;
+      border: 1px dashed #93c5fd;
+      border-radius: 999px;
+      background: #eff6ff;
+      color: #1d4ed8;
+      padding: 2px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 1.4;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .group-inline-add:hover {
+      background: #dbeafe;
+      border-color: #60a5fa;
+    }
+
+    .table-empty {
+      color: var(--muted);
+    }
+
+    .row-result-value.profit {
+      color: var(--profit);
+      background: var(--profit-bg);
+      font-weight: 600;
+    }
+
+    .row-result-value.loss {
+      color: var(--loss);
+      background: var(--loss-bg);
+      font-weight: 600;
+    }
+
+    .row-result-value.neutral {
+      color: var(--neutral);
+      background: var(--neutral-bg);
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div id="authScreen" class="auth-screen">
+    <div class="auth-card">
+      <h2 class="auth-title">请输入访问密码</h2>
+      <div class="auth-subtitle">验证通过后才可进入统计页面</div>
+      <div class="field">
+        <label for="authPassword">密码</label>
+        <input id="authPassword" class="auth-input" type="password" placeholder="请输入密码">
+      </div>
+      <button id="authSubmitBtn" type="button" class="btn-add auth-submit">进入页面</button>
+      <div id="authError" class="auth-error"></div>
+    </div>
+  </div>
+
+  <div id="appRoot" class="page page-locked">
+    <h1>统计工具</h1>
+    <div class="page-subtitle">数据录入、分组计算与结果追踪一体化面板</div>
+
+    <section class="panel">
+      <div class="controls controls-primary">
+        <div class="field winning-field">
+          <label for="winningCol">中奖号码（1-49）</label>
+          <input id="winningCol" class="winning-input" type="number" min="1" max="49" step="1" value="">
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div id="columnRowsViewport" class="column-rows-viewport">
+        <div class="column-scroll">
+          <div id="columnGrid" class="column-grid"></div>
+        </div>
+      </div>
+      <div class="column-fold-toggle-wrap">
+        <button id="toggleColumnRowsBtn" type="button" class="column-fold-toggle" aria-expanded="false">
+          <span class="arrow">⌄</span>
+          <span id="toggleColumnRowsText">展开剩余行</span>
+        </button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2 class="panel-title">用户</h2>
+      <div class="quick-add-controls">
+        <div class="field">
+          <label for="rowLabelInput">姓名</label>
+          <input id="rowLabelInput" type="text" placeholder="记得输入名字">
+        </div>
+        <div class="field">
+          <label for="rowColTrigger">号码</label>
+          <div id="rowColPicker" class="multi-col-picker">
+            <button id="rowColTrigger" type="button" class="multi-col-trigger" aria-haspopup="listbox" aria-expanded="false">
+              <span id="rowColTriggerText" class="multi-col-trigger-text"></span>
+              <span class="multi-col-trigger-arrow">⌄</span>
+            </button>
+            <div id="rowColMenu" class="multi-col-menu" role="listbox" aria-multiselectable="true"></div>
+          </div>
+          <div class="multi-col-select-hint">可单选或多选，同一金额会同时记录到所有已选号码</div>
+        </div>
+        <div class="field">
+          <label for="rowValueInput">金额</label>
+          <input id="rowValueInput" type="number" step="any" placeholder="例如 10">
+        </div>
+        <div class="field button-field">
+          <button id="addPairBtn" type="button" class="btn-add-outline">添加（号码+金额）</button>
+        </div>
+        <div class="field button-field">
+          <button id="addRowBtn" type="button" class="btn-add">完成（确认无误）</button>
+        </div>
+      </div>
+      <div class="current-groups">
+        <div class="current-groups-title">当前列表（一个号码+金额为一组）</div>
+        <div id="currentGroupsList" class="current-groups-list"></div>
+      </div>
+      <div class="row-result-table-wrap">
+        <table class="row-result-table">
+          <thead>
+            <tr>
+              <th>序号</th>
+              <th>姓名</th>
+              <th>购买明细（号码=金额）</th>
+              <th>总和</th>
+              <th>返水</th>
+              <th>结果</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="rowResultBody">
+            <tr>
+              <td class="table-empty" colspan="7"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="summary">
+        <div class="summary-item">
+          <div class="label">总和</div>
+          <div id="grandTotal" class="value">0</div>
+        </div>
+        <div class="summary-item">
+          <div class="label">返水</div>
+          <div id="rebateAmount" class="value">0</div>
+        </div>
+        <div class="summary-item">
+          <div class="label">中奖金额</div>
+          <div id="winningAmount" class="value">0</div>
+        </div>
+        <div id="finalSummary" class="summary-item final neutral">
+          <div class="label">最终结果 = 中奖金额 + 返水 - 总和</div>
+          <div id="finalResult" class="value">0</div>
+        </div>
+      </div>
+      <div class="danger-zone">
+        <span class="danger-zone-note">危险操作：清空后不可恢复</span>
+        <button id="clearDataBtn" type="button" class="btn-clear">清空全部数据</button>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const COL_COUNT = 49;
+    const ACCESS_PASSWORD = "123456";
+    const FIXED_REBATE_RATE = 0.036;
+    const FIXED_MULTIPLIER = 47;
+    const STORAGE_KEY = "rebate_tool_data_v1";
+    const RED_MARKS = new Set([1, 2, 7, 8, 12, 13, 18, 19, 23, 24, 29, 30, 34, 35, 40, 45, 46]);
+    const BLUE_MARKS = new Set([3, 4, 9, 10, 14, 15, 20, 25, 26, 31, 36, 37, 41, 42, 47, 48]);
+    const GREEN_MARKS = new Set([5, 6, 11, 16, 17, 21, 22, 27, 28, 32, 33, 38, 39, 43, 44, 49]);
+    const values = new Array(COL_COUNT).fill(0);
+
+    const columnGridEl = document.getElementById("columnGrid");
+    const columnRowsViewportEl = document.getElementById("columnRowsViewport");
+    const toggleColumnRowsBtnEl = document.getElementById("toggleColumnRowsBtn");
+    const toggleColumnRowsTextEl = document.getElementById("toggleColumnRowsText");
+    const desktopFoldMedia = window.matchMedia("(min-width: 1024px)");
+
+    const authScreenEl = document.getElementById("authScreen");
+    const appRootEl = document.getElementById("appRoot");
+    const authPasswordEl = document.getElementById("authPassword");
+    const authSubmitBtnEl = document.getElementById("authSubmitBtn");
+    const authErrorEl = document.getElementById("authError");
+
+    const winningColEl = document.getElementById("winningCol");
+    const clearDataBtnEl = document.getElementById("clearDataBtn");
+
+    const grandTotalEl = document.getElementById("grandTotal");
+    const rebateAmountEl = document.getElementById("rebateAmount");
+    const winningAmountEl = document.getElementById("winningAmount");
+    const finalResultEl = document.getElementById("finalResult");
+    const finalSummaryEl = document.getElementById("finalSummary");
+    const rowLabelInputEl = document.getElementById("rowLabelInput");
+    const rowColPickerEl = document.getElementById("rowColPicker");
+    const rowColTriggerEl = document.getElementById("rowColTrigger");
+    const rowColTriggerTextEl = document.getElementById("rowColTriggerText");
+    const rowColMenuEl = document.getElementById("rowColMenu");
+    const rowValueInputEl = document.getElementById("rowValueInput");
+    const addPairBtnEl = document.getElementById("addPairBtn");
+    const addRowBtnEl = document.getElementById("addRowBtn");
+    const currentGroupsListEl = document.getElementById("currentGroupsList");
+    const rowResultBodyEl = document.getElementById("rowResultBody");
+
+    const columnCards = [];
+    const sumCells = [];
+    const columnValueEls = [];
+    const rowEntries = [];
+    const draftRowGroups = [];
+    const draftSelectedCols = new Set();
+    let nextRowId = 1;
+    let nextDraftGroupId = 1;
+    let isColumnRowsCollapsed = true;
+
+    function num(v) {
+      const n = Number(v);
+      return Number.isFinite(n) ? n : 0;
+    }
+
+    function format(v) {
+      return num(v).toLocaleString("zh-CN", {
+        maximumFractionDigits: 4
+      });
+    }
+
+    function unlockPage() {
+      authErrorEl.textContent = "";
+      authPasswordEl.value = "";
+      authScreenEl.classList.add("hidden");
+      appRootEl.classList.remove("page-locked");
+      winningColEl.focus();
+    }
+
+    function tryEnterPage() {
+      const inputPassword = authPasswordEl.value;
+      if (inputPassword === ACCESS_PASSWORD) {
+        unlockPage();
+        return;
+      }
+      authErrorEl.textContent = "密码错误，请重试。";
+      authPasswordEl.value = "";
+      authPasswordEl.focus();
+    }
+
+    function rebuildColumnDisplayAndValues() {
+      const groupedValues = Array.from({ length: COL_COUNT }, () => []);
+      values.fill(0);
+
+      rowEntries.forEach((entry, rowIndex) => {
+        entry.groups.forEach((group, groupIndex) => {
+          const colIndex = group.colNo - 1;
+          if (colIndex < 0 || colIndex >= COL_COUNT) {
+            return;
+          }
+          const amount = num(group.amount);
+          groupedValues[colIndex].push({
+            amount,
+            rowNo: rowIndex + 1,
+            groupNo: groupIndex + 1,
+            label: entry.label || ""
+          });
+          values[colIndex] += amount;
+        });
+      });
+
+      groupedValues.forEach((items, index) => {
+        const container = columnValueEls[index];
+        if (!container) {
+          return;
+        }
+        container.innerHTML = "";
+        if (items.length === 0) {
+          return;
+        }
+        items.forEach((item) => {
+          const chip = document.createElement("span");
+          chip.className = "col-value-item";
+          chip.title = item.label
+            ? `第${item.rowNo}条（${item.label}）第${item.groupNo}组`
+            : `第${item.rowNo}条第${item.groupNo}组`;
+
+          const seq = document.createElement("span");
+          seq.className = "col-value-seq";
+          seq.textContent = `#${item.rowNo}`;
+
+          const amountText = document.createElement("span");
+          amountText.className = "col-value-amount";
+          amountText.textContent = format(item.amount);
+
+          chip.appendChild(seq);
+          chip.appendChild(amountText);
+          container.appendChild(chip);
+        });
+      });
+    }
+
+    function getWinningCol() {
+      const winningCol = Math.trunc(num(winningColEl.value));
+      return winningCol >= 1 && winningCol <= COL_COUNT ? winningCol : 0;
+    }
+
+    function normalizeColNo(rawCol) {
+      const colNo = Math.trunc(num(rawCol));
+      return colNo >= 1 && colNo <= COL_COUNT ? colNo : 0;
+    }
+
+    function getDraftSelectedColNos() {
+      return Array.from(draftSelectedCols).sort((a, b) => a - b);
+    }
+
+    function syncDraftColPicker() {
+      const selectedCols = getDraftSelectedColNos();
+      if (selectedCols.length === 0) {
+        rowColTriggerTextEl.textContent = "请选择号码";
+        rowColTriggerEl.title = "请选择号码";
+      } else if (selectedCols.length <= 6) {
+        const label = selectedCols.join(", ");
+        rowColTriggerTextEl.textContent = label;
+        rowColTriggerEl.title = `已选：${label}`;
+      } else {
+        const head = selectedCols.slice(0, 6).join(", ");
+        const label = `${head} +${selectedCols.length - 6}`;
+        rowColTriggerTextEl.textContent = label;
+        rowColTriggerEl.title = `已选：${selectedCols.join(", ")}`;
+      }
+
+      rowColMenuEl.querySelectorAll("button[data-col-no]").forEach((btn) => {
+        const colNo = normalizeColNo(btn.dataset.colNo);
+        const selected = draftSelectedCols.has(colNo);
+        btn.classList.toggle("selected", selected);
+        btn.setAttribute("aria-selected", selected ? "true" : "false");
+      });
+    }
+
+    function setDraftSelectedCols(rawCols, fallbackDefault = false) {
+      draftSelectedCols.clear();
+      if (Array.isArray(rawCols)) {
+        rawCols.forEach((rawCol) => {
+          const colNo = normalizeColNo(rawCol);
+          if (colNo > 0) {
+            draftSelectedCols.add(colNo);
+          }
+        });
+      }
+      if (fallbackDefault && draftSelectedCols.size === 0) {
+        draftSelectedCols.add(1);
+      }
+      syncDraftColPicker();
+    }
+
+    function setDraftColPickerOpen(open) {
+      const shouldOpen = Boolean(open);
+      rowColPickerEl.classList.toggle("open", shouldOpen);
+      rowColTriggerEl.setAttribute("aria-expanded", shouldOpen ? "true" : "false");
+    }
+
+    function toggleDraftColPicker() {
+      setDraftColPickerOpen(!rowColPickerEl.classList.contains("open"));
+    }
+
+    function renderDraftColPickerOptions() {
+      rowColMenuEl.innerHTML = "";
+      for (let i = 1; i <= COL_COUNT; i += 1) {
+        const optionBtn = document.createElement("button");
+        optionBtn.type = "button";
+        optionBtn.className = "multi-col-option";
+        optionBtn.dataset.colNo = String(i);
+        optionBtn.setAttribute("role", "option");
+        optionBtn.textContent = String(i);
+        rowColMenuEl.appendChild(optionBtn);
+      }
+      syncDraftColPicker();
+    }
+
+    function normalizeGroups(rawGroups) {
+      if (!Array.isArray(rawGroups)) {
+        return [];
+      }
+      return rawGroups
+        .map((group) => {
+          const colNo = normalizeColNo(group && group.colNo);
+          const amount = Number(group && group.amount);
+          if (!colNo || !Number.isFinite(amount)) {
+            return null;
+          }
+          return { colNo, amount };
+        })
+        .filter(Boolean);
+    }
+
+    function calcRowTotal(entry) {
+      return entry.groups.reduce((sum, group) => sum + num(group.amount), 0);
+    }
+
+    function calcRowRebate(entry) {
+      return calcRowTotal(entry) * FIXED_REBATE_RATE;
+    }
+
+    function calcSingleRowResult(entry, winningCol) {
+      const rowTotal = calcRowTotal(entry);
+      const rebatePart = calcRowRebate(entry);
+      const winPart = entry.groups.reduce((sum, group) => {
+        if (group.colNo !== winningCol) {
+          return sum;
+        }
+        return sum + num(group.amount) * FIXED_MULTIPLIER;
+      }, 0);
+      return winPart + rebatePart - rowTotal;
+    }
+
+    function renderDraftGroups() {
+      const winningCol = getWinningCol();
+      currentGroupsListEl.innerHTML = "";
+
+      if (draftRowGroups.length === 0) {
+        return;
+      }
+
+      draftRowGroups.forEach((group) => {
+        const chip = document.createElement("div");
+        chip.className = "group-chip";
+        if (group.colNo === winningCol) {
+          chip.classList.add("winner");
+        }
+        chip.textContent = `${group.colNo} = ${format(group.amount)}`;
+
+        const deleteBtn = document.createElement("button");
+        deleteBtn.type = "button";
+        deleteBtn.className = "delete-group";
+        deleteBtn.dataset.draftGroupId = String(group.id);
+        deleteBtn.textContent = "删";
+
+        chip.appendChild(deleteBtn);
+        currentGroupsListEl.appendChild(chip);
+      });
+    }
+
+    function renderRowEntries() {
+      const winningCol = getWinningCol();
+      rowResultBodyEl.innerHTML = "";
+
+      if (rowEntries.length === 0) {
+        const tr = document.createElement("tr");
+        const td = document.createElement("td");
+        td.colSpan = 7;
+        td.className = "table-empty";
+        td.textContent = "";
+        tr.appendChild(td);
+        rowResultBodyEl.appendChild(tr);
+        return;
+      }
+
+      rowEntries.forEach((entry, index) => {
+        const rowTotal = calcRowTotal(entry);
+        const rowRebate = calcRowRebate(entry);
+        const rowResult = calcSingleRowResult(entry, winningCol);
+        const tr = document.createElement("tr");
+        const rowHitWinner = entry.groups.some((group) => group.colNo === winningCol);
+        if (rowHitWinner) {
+          tr.classList.add("row-hit-winner");
+        }
+
+        const indexTd = document.createElement("td");
+        indexTd.textContent = String(index + 1);
+        if (rowHitWinner) {
+          indexTd.classList.add("row-index-hit");
+        }
+
+        const labelTd = document.createElement("td");
+        labelTd.textContent = entry.label || "-";
+
+        const groupsTd = document.createElement("td");
+        const groupsWrap = document.createElement("div");
+        groupsWrap.className = "group-detail-list";
+        entry.groups.forEach((group, groupIndex) => {
+          const groupItem = document.createElement("span");
+          groupItem.className = "group-detail-item";
+
+          const colTag = document.createElement("span");
+          colTag.className = "group-col-tag";
+          if (RED_MARKS.has(group.colNo)) {
+            colTag.classList.add("mark-red");
+          } else if (BLUE_MARKS.has(group.colNo)) {
+            colTag.classList.add("mark-blue");
+          } else if (GREEN_MARKS.has(group.colNo)) {
+            colTag.classList.add("mark-green");
+          }
+          if (group.colNo === winningCol) {
+            colTag.classList.add("winner");
+          }
+          colTag.textContent = String(group.colNo);
+
+          const amountText = document.createElement("span");
+          amountText.className = "group-amount-text";
+          amountText.textContent = `=${format(group.amount)}`;
+
+          const removeBtn = document.createElement("button");
+          removeBtn.type = "button";
+          removeBtn.className = "group-detail-remove";
+          removeBtn.dataset.groupRemoveRow = String(entry.id);
+          removeBtn.dataset.groupIndex = String(groupIndex);
+          removeBtn.title = "删除该号码";
+          removeBtn.textContent = "×";
+
+          groupItem.appendChild(colTag);
+          groupItem.appendChild(amountText);
+          groupItem.appendChild(removeBtn);
+          groupsWrap.appendChild(groupItem);
+        });
+        const addGroupBtn = document.createElement("button");
+        addGroupBtn.type = "button";
+        addGroupBtn.className = "group-inline-add";
+        addGroupBtn.dataset.rowAddGroup = String(entry.id);
+        addGroupBtn.textContent = "+ 添加";
+        groupsWrap.appendChild(addGroupBtn);
+        groupsTd.appendChild(groupsWrap);
+
+        const rowTotalTd = document.createElement("td");
+        rowTotalTd.textContent = format(rowTotal);
+
+        const rowRebateTd = document.createElement("td");
+        rowRebateTd.textContent = format(rowRebate);
+
+        const resultTd = document.createElement("td");
+        resultTd.textContent = format(rowResult);
+        resultTd.className = "row-result-value";
+        if (rowResult > 0) {
+          resultTd.classList.add("profit");
+        } else if (rowResult < 0) {
+          resultTd.classList.add("loss");
+        } else {
+          resultTd.classList.add("neutral");
+        }
+
+        const actionTd = document.createElement("td");
+        const deleteBtn = document.createElement("button");
+        deleteBtn.type = "button";
+        deleteBtn.className = "btn-delete-row";
+        deleteBtn.dataset.rowId = String(entry.id);
+        deleteBtn.textContent = "删除";
+        actionTd.appendChild(deleteBtn);
+
+        tr.appendChild(indexTd);
+        tr.appendChild(labelTd);
+        tr.appendChild(groupsTd);
+        tr.appendChild(rowTotalTd);
+        tr.appendChild(rowRebateTd);
+        tr.appendChild(resultTd);
+        tr.appendChild(actionTd);
+        rowResultBodyEl.appendChild(tr);
+      });
+    }
+
+    function addDraftGroup() {
+      const selectedColNos = getDraftSelectedColNos();
+      const rawAmount = rowValueInputEl.value.trim();
+      const amount = Number(rawAmount);
+
+      if (selectedColNos.length === 0) {
+        window.alert("请选择至少一个 1-49 的号码。");
+        return;
+      }
+
+      if (!rawAmount || !Number.isFinite(amount)) {
+        window.alert("请输入有效数字。");
+        return;
+      }
+
+      selectedColNos.forEach((colNo) => {
+        draftRowGroups.push({
+          id: nextDraftGroupId,
+          colNo,
+          amount
+        });
+        nextDraftGroupId += 1;
+      });
+      rowValueInputEl.value = "";
+      renderDraftGroups();
+      saveData();
+      rowValueInputEl.focus();
+    }
+
+    function removeDraftGroup(groupId) {
+      const targetIndex = draftRowGroups.findIndex((group) => group.id === groupId);
+      if (targetIndex < 0) {
+        return;
+      }
+      draftRowGroups.splice(targetIndex, 1);
+      renderDraftGroups();
+      saveData();
+    }
+
+    function clearDraftRow() {
+      draftRowGroups.length = 0;
+      nextDraftGroupId = 1;
+      renderDraftGroups();
+    }
+
+    function addRowEntry() {
+      const label = rowLabelInputEl.value.trim();
+      if (draftRowGroups.length === 0) {
+        window.alert("请先添加至少一组列号+数字。");
+        return;
+      }
+
+      const entry = {
+        id: nextRowId,
+        label,
+        groups: draftRowGroups.map((group) => ({
+          colNo: group.colNo,
+          amount: group.amount
+        }))
+      };
+      nextRowId += 1;
+      rowEntries.push(entry);
+
+      rowLabelInputEl.value = "";
+      clearDraftRow();
+      rowValueInputEl.value = "";
+
+      updateAll();
+      saveData();
+      rowValueInputEl.focus();
+    }
+
+    function removeRowEntry(rowId) {
+      const targetIndex = rowEntries.findIndex((entry) => entry.id === rowId);
+      if (targetIndex < 0) {
+        return;
+      }
+
+      const entry = rowEntries[targetIndex];
+      const rowNo = targetIndex + 1;
+      const namePart = entry && entry.label ? `（${entry.label}）` : "";
+      const message = `确定删除第${rowNo}条${namePart}吗？删除后不可恢复。`;
+      if (!window.confirm(message)) {
+        return;
+      }
+
+      rowEntries.splice(targetIndex, 1);
+      updateAll();
+      saveData();
+    }
+
+    function removeGroupFromRow(rowId, groupIndex) {
+      const rowIndex = rowEntries.findIndex((entry) => entry.id === rowId);
+      if (rowIndex < 0) {
+        return;
+      }
+      const entry = rowEntries[rowIndex];
+      if (!entry || !Array.isArray(entry.groups) || groupIndex < 0 || groupIndex >= entry.groups.length) {
+        return;
+      }
+
+      const group = entry.groups[groupIndex];
+      const groupText = `${group.colNo} = ${format(group.amount)}`;
+      const message = entry.groups.length === 1
+        ? `确定删除「${groupText}」吗？删除后该条记录会一并移除。`
+        : `确定删除「${groupText}」吗？`;
+      if (!window.confirm(message)) {
+        return;
+      }
+
+      if (entry.groups.length === 1) {
+        rowEntries.splice(rowIndex, 1);
+      } else {
+        entry.groups.splice(groupIndex, 1);
+      }
+
+      updateAll();
+      saveData();
+    }
+
+    function addGroupToRow(rowId) {
+      const rowIndex = rowEntries.findIndex((entry) => entry.id === rowId);
+      if (rowIndex < 0) {
+        return;
+      }
+
+      const colRaw = window.prompt("请输入号码（1-49）：");
+      if (colRaw == null) {
+        return;
+      }
+      const colNo = normalizeColNo(colRaw);
+      if (!colNo) {
+        window.alert("号码必须是 1-49。");
+        return;
+      }
+
+      const amountRaw = window.prompt("请输入金额：");
+      if (amountRaw == null) {
+        return;
+      }
+      const amountText = String(amountRaw).trim();
+      const amount = Number(amountText);
+      if (!amountText || !Number.isFinite(amount)) {
+        window.alert("请输入有效金额。");
+        return;
+      }
+
+      rowEntries[rowIndex].groups.push({
+        colNo,
+        amount
+      });
+      updateAll();
+      saveData();
+    }
+
+    function saveData() {
+      const payload = {
+        rebateRate: FIXED_REBATE_RATE,
+        multiplier: FIXED_MULTIPLIER,
+        rowEntries: rowEntries.map((entry) => ({
+          id: entry.id,
+          label: entry.label,
+          groups: entry.groups
+        })),
+        draftRowLabel: rowLabelInputEl.value,
+        draftRowGroups: draftRowGroups.map((group) => ({
+          id: group.id,
+          colNo: group.colNo,
+          amount: group.amount
+        })),
+        nextDraftGroupId,
+        nextRowId
+      };
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+      } catch (e) {
+        console.error("localStorage 保存失败", e);
+      }
+    }
+
+    function restoreData() {
+      let raw = "";
+      try {
+        raw = localStorage.getItem(STORAGE_KEY);
+      } catch (e) {
+        console.error("localStorage 读取失败", e);
+        return;
+      }
+
+      if (!raw) {
+        return;
+      }
+
+      let data = null;
+      try {
+        data = JSON.parse(raw);
+      } catch (e) {
+        return;
+      }
+
+      if (!data || typeof data !== "object") {
+        return;
+      }
+
+      winningColEl.value = "";
+
+      if (Array.isArray(data.rowEntries)) {
+        let maxRowId = 0;
+        data.rowEntries.forEach((entry) => {
+          let groups = normalizeGroups(entry && entry.groups);
+          if (groups.length === 0) {
+            const rawCols = Array.isArray(entry && entry.colNos) ? entry.colNos : [entry && entry.colNo];
+            const amount = Number(entry && entry.amount);
+            if (Number.isFinite(amount)) {
+              groups = rawCols
+                .map((rawCol) => normalizeColNo(rawCol))
+                .filter((colNo) => colNo > 0)
+                .map((colNo) => ({ colNo, amount }));
+            }
+          }
+
+          const idCandidate = Number(entry.id);
+          const rowId = Number.isFinite(idCandidate) && Math.trunc(idCandidate) > 0 ? Math.trunc(idCandidate) : nextRowId;
+          if (groups.length > 0) {
+            rowEntries.push({
+              id: rowId,
+              label: entry.label == null ? "" : String(entry.label),
+              groups
+            });
+            maxRowId = Math.max(maxRowId, rowId);
+          }
+        });
+        nextRowId = Math.max(nextRowId, maxRowId + 1);
+      }
+
+      if (data.draftRowLabel != null) {
+        rowLabelInputEl.value = String(data.draftRowLabel);
+      }
+
+      if (Array.isArray(data.draftRowGroups)) {
+        const groups = normalizeGroups(data.draftRowGroups);
+        groups.forEach((group, index) => {
+          draftRowGroups.push({
+            id: index + 1,
+            colNo: group.colNo,
+            amount: group.amount
+          });
+        });
+        nextDraftGroupId = draftRowGroups.length + 1;
+      }
+
+      if (Number.isFinite(Number(data.nextDraftGroupId))) {
+        nextDraftGroupId = Math.max(nextDraftGroupId, Math.max(1, Math.trunc(Number(data.nextDraftGroupId))));
+      }
+
+      if (Number.isFinite(Number(data.nextRowId))) {
+        nextRowId = Math.max(nextRowId, Math.trunc(Number(data.nextRowId)));
+      }
+
+      syncDraftColPicker();
+    }
+
+    function createColumns() {
+      for (let i = 0; i < COL_COUNT; i += 1) {
+        const colNo = i + 1;
+        const colCard = document.createElement("div");
+        colCard.className = "col-card";
+        if (RED_MARKS.has(colNo)) {
+          colCard.classList.add("mark-red");
+        } else if (BLUE_MARKS.has(colNo)) {
+          colCard.classList.add("mark-blue");
+        } else if (GREEN_MARKS.has(colNo)) {
+          colCard.classList.add("mark-green");
+        }
+
+        const header = document.createElement("div");
+        header.className = "col-head";
+        header.textContent = String(colNo);
+        const inputWrap = document.createElement("div");
+        inputWrap.className = "col-input-wrap";
+
+        const valueBox = document.createElement("div");
+        valueBox.className = "col-values";
+        inputWrap.appendChild(valueBox);
+        const sumCell = document.createElement("div");
+        sumCell.className = "col-sum";
+        sumCell.textContent = "0";
+
+        colCard.appendChild(header);
+        colCard.appendChild(inputWrap);
+        colCard.appendChild(sumCell);
+        columnGridEl.appendChild(colCard);
+
+        columnCards.push(colCard);
+        columnValueEls.push(valueBox);
+        sumCells.push(sumCell);
+      }
+    }
+
+    function getCollapsedFirstRowHeight() {
+      const firstRowCount = Math.min(12, columnCards.length);
+      let rowHeight = 0;
+      for (let i = 0; i < firstRowCount; i += 1) {
+        rowHeight = Math.max(rowHeight, columnCards[i].offsetHeight);
+      }
+      return rowHeight;
+    }
+
+    function updateColumnRowsCollapsedHeight() {
+      const rowHeight = getCollapsedFirstRowHeight();
+      if (rowHeight > 0) {
+        columnRowsViewportEl.style.setProperty("--first-row-height", `${rowHeight}px`);
+      }
+    }
+
+    function applyColumnRowsFoldState() {
+      const isDesktop = desktopFoldMedia.matches;
+      if (!isDesktop) {
+        columnRowsViewportEl.classList.remove("collapsed");
+        toggleColumnRowsBtnEl.setAttribute("aria-expanded", "true");
+        toggleColumnRowsTextEl.textContent = "展开剩余行";
+        return;
+      }
+
+      columnRowsViewportEl.classList.toggle("collapsed", isColumnRowsCollapsed);
+      const expanded = !isColumnRowsCollapsed;
+      toggleColumnRowsBtnEl.setAttribute("aria-expanded", String(expanded));
+      toggleColumnRowsTextEl.textContent = expanded ? "收起剩余行" : "展开剩余行";
+    }
+
+    function toggleColumnRowsFold() {
+      if (!desktopFoldMedia.matches) {
+        return;
+      }
+      isColumnRowsCollapsed = !isColumnRowsCollapsed;
+      applyColumnRowsFoldState();
+    }
+
+    function updateHighlight(winningCol) {
+      columnCards.forEach((card, i) => {
+        card.classList.toggle("winner", i === winningCol - 1);
+      });
+    }
+
+    function updateAll() {
+      rebuildColumnDisplayAndValues();
+      const rebateRate = FIXED_REBATE_RATE;
+      const multiplier = FIXED_MULTIPLIER;
+      const winningCol = Math.trunc(num(winningColEl.value));
+
+      const grandTotal = values.reduce((sum, v) => sum + num(v), 0);
+      const winningValue = winningCol >= 1 && winningCol <= COL_COUNT ? values[winningCol - 1] : 0;
+
+      const rebate = grandTotal * rebateRate;
+      const winningAmount = winningValue * multiplier;
+      const finalResult = winningAmount + rebate - grandTotal;
+
+      values.forEach((v, i) => {
+        sumCells[i].textContent = format(v);
+      });
+
+      grandTotalEl.textContent = format(grandTotal);
+      rebateAmountEl.textContent = format(rebate);
+      winningAmountEl.textContent = format(winningAmount);
+      finalResultEl.textContent = format(finalResult);
+
+      finalSummaryEl.classList.remove("profit", "loss", "neutral");
+      if (finalResult > 0) {
+        finalSummaryEl.classList.add("profit");
+      } else if (finalResult < 0) {
+        finalSummaryEl.classList.add("loss");
+      } else {
+        finalSummaryEl.classList.add("neutral");
+      }
+
+      updateHighlight(winningCol);
+      renderDraftGroups();
+      updateColumnRowsCollapsedHeight();
+      renderRowEntries();
+    }
+
+    function clearAllData() {
+      if (!window.confirm("确定要清空所有数据吗？")) {
+        return;
+      }
+
+      winningColEl.value = "";
+      rowLabelInputEl.value = "";
+      setDraftSelectedCols([], false);
+      rowValueInputEl.value = "";
+      clearDraftRow();
+      rowEntries.length = 0;
+      nextRowId = 1;
+      nextDraftGroupId = 1;
+
+      localStorage.removeItem(STORAGE_KEY);
+      updateAll();
+    }
+
+    winningColEl.addEventListener("input", () => {
+      updateAll();
+      saveData();
+    });
+    authSubmitBtnEl.addEventListener("click", tryEnterPage);
+    authPasswordEl.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        tryEnterPage();
+      }
+    });
+    rowLabelInputEl.addEventListener("input", saveData);
+    rowColTriggerEl.addEventListener("click", () => {
+      toggleDraftColPicker();
+    });
+    rowColMenuEl.addEventListener("click", (event) => {
+      const optionBtn = event.target.closest("button[data-col-no]");
+      if (!optionBtn) {
+        return;
+      }
+      const colNo = normalizeColNo(optionBtn.dataset.colNo);
+      if (!colNo) {
+        return;
+      }
+      if (draftSelectedCols.has(colNo)) {
+        draftSelectedCols.delete(colNo);
+      } else {
+        draftSelectedCols.add(colNo);
+      }
+      syncDraftColPicker();
+      saveData();
+    });
+    document.addEventListener("pointerdown", (event) => {
+      if (!rowColPickerEl.contains(event.target)) {
+        setDraftColPickerOpen(false);
+      }
+    });
+    toggleColumnRowsBtnEl.addEventListener("click", toggleColumnRowsFold);
+    desktopFoldMedia.addEventListener("change", () => {
+      updateColumnRowsCollapsedHeight();
+      applyColumnRowsFoldState();
+    });
+    window.addEventListener("resize", updateColumnRowsCollapsedHeight);
+    columnGridEl.addEventListener("pointerup", updateColumnRowsCollapsedHeight);
+
+    clearDataBtnEl.addEventListener("click", clearAllData);
+    addPairBtnEl.addEventListener("click", addDraftGroup);
+    addRowBtnEl.addEventListener("click", addRowEntry);
+    currentGroupsListEl.addEventListener("click", (event) => {
+      const deleteBtn = event.target.closest("button[data-draft-group-id]");
+      if (!deleteBtn) {
+        return;
+      }
+      const groupId = Number(deleteBtn.dataset.draftGroupId);
+      if (!Number.isFinite(groupId)) {
+        return;
+      }
+      removeDraftGroup(groupId);
+    });
+    rowResultBodyEl.addEventListener("click", (event) => {
+      const removeGroupBtn = event.target.closest("button[data-group-remove-row]");
+      if (removeGroupBtn) {
+        const rowId = Number(removeGroupBtn.dataset.groupRemoveRow);
+        const groupIndex = Number(removeGroupBtn.dataset.groupIndex);
+        if (!Number.isFinite(rowId) || !Number.isInteger(groupIndex)) {
+          return;
+        }
+        removeGroupFromRow(rowId, groupIndex);
+        return;
+      }
+
+      const addGroupBtn = event.target.closest("button[data-row-add-group]");
+      if (addGroupBtn) {
+        const rowId = Number(addGroupBtn.dataset.rowAddGroup);
+        if (!Number.isFinite(rowId)) {
+          return;
+        }
+        addGroupToRow(rowId);
+        return;
+      }
+
+      const deleteBtn = event.target.closest("button[data-row-id]");
+      if (!deleteBtn) {
+        return;
+      }
+      const rowId = Number(deleteBtn.dataset.rowId);
+      if (!Number.isFinite(rowId)) {
+        return;
+      }
+      removeRowEntry(rowId);
+    });
+    rowValueInputEl.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        addDraftGroup();
+      }
+    });
+
+    createColumns();
+    renderDraftColPickerOptions();
+    restoreData();
+    syncDraftColPicker();
+    renderDraftGroups();
+    updateAll();
+    updateColumnRowsCollapsedHeight();
+    applyColumnRowsFoldState();
+    authPasswordEl.focus();
+  </script>
+<script src="/auth-guard.js"></script>
+</body>
+</html>

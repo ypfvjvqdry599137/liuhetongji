@@ -1,0 +1,12 @@
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+[[edge_functions]]
+  function = "auth-guard"
+  path = "/*"
+
+[[redirects]]
+  from = "/login"
+  to = "/login.html"
+  status = 200
