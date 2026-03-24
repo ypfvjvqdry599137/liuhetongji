@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -145,6 +145,40 @@
       margin: 8px 0 16px;
       color: var(--muted);
       font-size: 14px;
+    }
+
+    .page-nav {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(248, 250, 252, 0.9);
+      margin: 0 0 14px;
+    }
+
+    .page-nav-btn {
+      border: 1px solid transparent;
+      background: transparent;
+      color: #1e3a8a;
+      border-radius: 999px;
+      padding: 7px 16px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.18s ease;
+    }
+
+    .page-nav-btn:hover {
+      background: rgba(59, 130, 246, 0.1);
+    }
+
+    .page-nav-btn.active {
+      color: #ffffff;
+      background: linear-gradient(135deg, #1d4ed8, #2563eb);
+      border-color: #1d4ed8;
+      box-shadow: 0 8px 18px rgba(37, 99, 235, 0.25);
     }
 
     .panel {
@@ -707,6 +741,20 @@
         font-size: 13px;
       }
 
+      .page-nav {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .smart-import-head {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .btn-import {
+        width: 100%;
+      }
+
       .col-values {
         height: 70px;
       }
@@ -790,6 +838,60 @@
       grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
       gap: 10px;
       margin-bottom: 10px;
+    }
+
+    .smart-import-box {
+      border: 1px dashed #93c5fd;
+      border-radius: 12px;
+      background: linear-gradient(180deg, #ffffff, #f3f8ff);
+      padding: 12px;
+      margin-bottom: 10px;
+    }
+
+    .smart-import-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .smart-import-title {
+      font-size: 13px;
+      color: #1e3a8a;
+      font-weight: 700;
+    }
+
+    .smart-import-input {
+      width: 100%;
+      min-height: 90px;
+      resize: vertical;
+      border: 1px solid #bfdbfe;
+      border-radius: 10px;
+      background: #ffffff;
+      padding: 10px 12px;
+      font-size: 13px;
+      line-height: 1.45;
+      color: var(--text);
+      font-family: inherit;
+      outline: none;
+    }
+
+    .smart-import-input:focus {
+      border-color: #60a5fa;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.16);
+    }
+
+    .smart-import-help {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .btn-import {
+      min-width: 160px;
+      white-space: nowrap;
     }
 
     .field .hint {
@@ -1116,13 +1218,13 @@
 <body>
   <div id="authScreen" class="auth-screen hidden">
     <div class="auth-card">
-      <h2 class="auth-title">请输入访问密码</h2>
-      <div class="auth-subtitle">验证通过后才可进入统计页面</div>
+      <h2 class="auth-title">&#35831;&#36755;&#20837;&#35775;&#38382;&#23494;&#30721;</h2>
+      <div class="auth-subtitle">&#39564;&#35777;&#36890;&#36807;&#21518;&#25165;&#21487;&#36827;&#20837;&#32479;&#35745;&#39029;&#38754;</div>
       <div class="field">
-        <label for="authPassword">密码</label>
-        <input id="authPassword" class="auth-input" type="password" placeholder="请输入密码">
+        <label for="authPassword">&#23494;&#30721;</label>
+        <input id="authPassword" class="auth-input" type="password" placeholder="&#35831;&#36755;&#20837;&#23494;&#30721;">
       </div>
-      <button id="authSubmitBtn" type="button" class="btn-add auth-submit">进入页面</button>
+      <button id="authSubmitBtn" type="button" class="btn-add auth-submit">&#36827;&#20837;&#39029;&#38754;</button>
       <div id="authError" class="auth-error"></div>
     </div>
   </div>
@@ -1130,6 +1232,10 @@
   <div id="appRoot" class="page">
     <h1>统计工具</h1>
     <div class="page-subtitle">数据录入、分组计算与结果追踪一体化面板</div>
+    <div class="page-nav" role="tablist" aria-label="page-switch">
+      <button type="button" class="page-nav-btn active" data-page-no="1" aria-selected="true">&#31532;&#19968;&#39029;</button>
+      <button type="button" class="page-nav-btn" data-page-no="2" aria-selected="false">&#31532;&#20108;&#39029;</button>
+    </div>
 
     <section class="panel">
       <div class="controls controls-primary">
@@ -1148,7 +1254,7 @@
       </div>
       <div class="column-fold-toggle-wrap">
         <button id="toggleColumnRowsBtn" type="button" class="column-fold-toggle" aria-expanded="false">
-          <span class="arrow">⌄</span>
+          <span class="arrow">&#9662;</span>
           <span id="toggleColumnRowsText">展开剩余行</span>
         </button>
       </div>
@@ -1166,11 +1272,11 @@
           <div id="rowColPicker" class="multi-col-picker">
             <button id="rowColTrigger" type="button" class="multi-col-trigger" aria-haspopup="listbox" aria-expanded="false">
               <span id="rowColTriggerText" class="multi-col-trigger-text"></span>
-              <span class="multi-col-trigger-arrow">⌄</span>
+              <span class="multi-col-trigger-arrow">&#9662;</span>
             </button>
             <div id="rowColMenu" class="multi-col-menu" role="listbox" aria-multiselectable="true"></div>
           </div>
-          <div class="multi-col-select-hint">可单选或多选，同一金额会同时记录到所有已选号码</div>
+          <div class="multi-col-select-hint">可单选或多选，同一金额会同时记录到所有已选号</div>
         </div>
         <div class="field">
           <label for="rowValueInput">金额</label>
@@ -1187,13 +1293,25 @@
         <div class="current-groups-title">当前列表（一个号码+金额为一组）</div>
         <div id="currentGroupsList" class="current-groups-list"></div>
       </div>
+      <div class="smart-import-box">
+        <div class="smart-import-head">
+          <div class="smart-import-title">文本自动录入（多格式）</div>
+          <button id="smartImportBtn" type="button" class="btn-add-outline btn-import">解析并追加到当前页</button>
+        </div>
+        <textarea
+          id="smartImportInput"
+          class="smart-import-input"
+          placeholder="示例：张三 1,2,3=50&#10;李四: 10 11 12 各30&#10;王五 1-5 金额 20"
+        ></textarea>
+        <div class="smart-import-help">支持空格、逗号、顿号、斜杠、区间（1-5）、=金额/金额/各/每个等写法；同一行可写多段不同金额（如“...各50,...各100”）；同一用户内重复号码会自动合并金额。</div>
+      </div>
       <div class="row-result-table-wrap">
         <table class="row-result-table">
           <thead>
             <tr>
               <th>序号</th>
               <th>姓名</th>
-              <th>购买明细（号码=金额）</th>
+              <th>购买明细（号码+金额）</th>
               <th>总和</th>
               <th>返水</th>
               <th>结果</th>
@@ -1230,7 +1348,7 @@
       </div>
       <div class="danger-zone">
         <span class="danger-zone-note">危险操作：清空后不可恢复</span>
-        <button id="clearDataBtn" type="button" class="btn-clear">清空全部数据</button>
+        <button id="clearDataBtn" type="button" class="btn-clear">&#28165;&#31354;&#24403;&#21069;&#39029;&#25968;&#25454;</button>
       </div>
     </section>
   </div>
@@ -1260,6 +1378,7 @@
 
     const winningColEl = document.getElementById("winningCol");
     const clearDataBtnEl = document.getElementById("clearDataBtn");
+    const pageNavBtnEls = Array.from(document.querySelectorAll("button[data-page-no]"));
 
     const grandTotalEl = document.getElementById("grandTotal");
     const rebateAmountEl = document.getElementById("rebateAmount");
@@ -1274,6 +1393,8 @@
     const rowValueInputEl = document.getElementById("rowValueInput");
     const addPairBtnEl = document.getElementById("addPairBtn");
     const addRowBtnEl = document.getElementById("addRowBtn");
+    const smartImportInputEl = document.getElementById("smartImportInput");
+    const smartImportBtnEl = document.getElementById("smartImportBtn");
     const currentGroupsListEl = document.getElementById("currentGroupsList");
     const rowResultBodyEl = document.getElementById("rowResultBody");
 
@@ -1291,6 +1412,11 @@
     let nextRowId = 1;
     let nextDraftGroupId = 1;
     let isColumnRowsCollapsed = true;
+    let currentPage = 1;
+    const pageStates = {
+      1: null,
+      2: null
+    };
 
     function num(v) {
       const n = Number(v);
@@ -1317,7 +1443,7 @@
         unlockPage();
         return;
       }
-      authErrorEl.textContent = "密码错误，请重试。";
+      authErrorEl.textContent = "\u5BC6\u7801\u9519\u8BEF\uFF0C\u8BF7\u91CD\u8BD5\u3002";
       authPasswordEl.value = "";
       authPasswordEl.focus();
     }
@@ -1356,8 +1482,8 @@
           const chip = document.createElement("span");
           chip.className = "col-value-item";
           chip.title = item.label
-            ? `第${item.rowNo}条（${item.label}）第${item.groupNo}组`
-            : `第${item.rowNo}条第${item.groupNo}组`;
+            ? `\u7B2C${item.rowNo}\u6761\uFF08${item.label}\uFF09\u7B2C${item.groupNo}\u7EC4`
+            : `\u7B2C${item.rowNo}\u6761\u7B2C${item.groupNo}\u7EC4`;
 
           const seq = document.createElement("span");
           seq.className = "col-value-seq";
@@ -1496,43 +1622,607 @@
 
       const selectedColNos = getRowInlineSelectedColNos();
       if (selectedColNos.length === 0) {
-        window.alert("请选择至少一个 1-49 的号码。");
+        window.alert("\u8BF7\u81F3\u5C11\u9009\u62E9\u4E00\u4E2A 1-49 \u53F7\u7801\u3002");
         return;
       }
 
       const amountText = rowInlineDraft.amountText.trim();
       const amount = Number(amountText);
       if (!amountText || !Number.isFinite(amount)) {
-        window.alert("请输入有效金额。");
+        window.alert("\u8BF7\u8F93\u5165\u6709\u6548\u91D1\u989D\u3002");
         return;
       }
 
       selectedColNos.forEach((colNo) => {
-        rowEntries[rowIndex].groups.push({
-          colNo,
-          amount
-        });
+        appendGroupAmount(rowEntries[rowIndex].groups, colNo, amount);
       });
+      rowEntries[rowIndex].groups = normalizeGroups(rowEntries[rowIndex].groups);
 
       resetRowInlineDraft();
       updateAll();
       saveData();
     }
 
-    function normalizeGroups(rawGroups) {
+    function mergeGroupsByCol(rawGroups) {
       if (!Array.isArray(rawGroups)) {
         return [];
       }
-      return rawGroups
-        .map((group) => {
-          const colNo = normalizeColNo(group && group.colNo);
-          const amount = Number(group && group.amount);
-          if (!colNo || !Number.isFinite(amount)) {
-            return null;
+      const amountByCol = new Map();
+      const colOrder = [];
+
+      rawGroups.forEach((group) => {
+        const colNo = normalizeColNo(group && group.colNo);
+        const amount = Number(group && group.amount);
+        if (!colNo || !Number.isFinite(amount)) {
+          return;
+        }
+        if (!amountByCol.has(colNo)) {
+          amountByCol.set(colNo, amount);
+          colOrder.push(colNo);
+          return;
+        }
+        amountByCol.set(colNo, amountByCol.get(colNo) + amount);
+      });
+
+      return colOrder.map((colNo) => ({
+        colNo,
+        amount: amountByCol.get(colNo)
+      }));
+    }
+
+    function normalizeGroups(rawGroups) {
+      return mergeGroupsByCol(rawGroups);
+    }
+
+    function appendGroupAmount(targetGroups, rawColNo, rawAmount) {
+      if (!Array.isArray(targetGroups)) {
+        return false;
+      }
+      const colNo = normalizeColNo(rawColNo);
+      const amount = Number(rawAmount);
+      if (!colNo || !Number.isFinite(amount)) {
+        return false;
+      }
+
+      const target = targetGroups.find((group) => group.colNo === colNo);
+      if (target) {
+        target.amount = num(target.amount) + amount;
+      } else {
+        targetGroups.push({ colNo, amount });
+      }
+      return true;
+    }
+
+    function appendDraftGroupAmount(rawColNo, rawAmount) {
+      const colNo = normalizeColNo(rawColNo);
+      const amount = Number(rawAmount);
+      if (!colNo || !Number.isFinite(amount)) {
+        return false;
+      }
+
+      const target = draftRowGroups.find((group) => group.colNo === colNo);
+      if (target) {
+        target.amount = num(target.amount) + amount;
+      } else {
+        draftRowGroups.push({
+          id: nextDraftGroupId,
+          colNo,
+          amount
+        });
+        nextDraftGroupId += 1;
+      }
+      return true;
+    }
+
+    function detectAmountInfo(text) {
+      const keywordRegex = /(?:金额|各|每个|每注|单注|=|x|X|\*)\s*([+-]?\d+(?:\.\d+)?)/;
+      const keywordMatch = keywordRegex.exec(text);
+      if (keywordMatch) {
+        const amountText = keywordMatch[1];
+        const amount = Number(amountText);
+        if (Number.isFinite(amount)) {
+          const amountStart = keywordMatch.index + keywordMatch[0].lastIndexOf(amountText);
+          return {
+            amount,
+            start: amountStart,
+            end: amountStart + amountText.length
+          };
+        }
+      }
+
+      const tailRegex = /([+-]?\d+(?:\.\d+)?)\s*(?:元|块|RMB|rmb)?\s*$/;
+      const tailMatch = tailRegex.exec(text);
+      if (tailMatch) {
+        const amountText = tailMatch[1];
+        const amount = Number(amountText);
+        if (Number.isFinite(amount)) {
+          return {
+            amount,
+            start: tailMatch.index,
+            end: tailMatch.index + amountText.length
+          };
+        }
+      }
+
+      return null;
+    }
+
+    function parseRangeCols(text) {
+      const cols = [];
+      const rangeRegex = /(\d{1,2})\s*[-~～至到]+\s*(\d{1,2})/g;
+      let rangeMatch = null;
+      while ((rangeMatch = rangeRegex.exec(text)) !== null) {
+        const start = normalizeColNo(rangeMatch[1]);
+        const end = normalizeColNo(rangeMatch[2]);
+        if (!start || !end) {
+          continue;
+        }
+        const from = Math.min(start, end);
+        const to = Math.max(start, end);
+        for (let colNo = from; colNo <= to; colNo += 1) {
+          cols.push(colNo);
+        }
+      }
+      return cols;
+    }
+
+    function extractColsFromText(text) {
+      const cols = [];
+      parseRangeCols(text).forEach((colNo) => cols.push(colNo));
+
+      const numberMatches = Array.from(String(text || "").matchAll(/\d+/g));
+      numberMatches.forEach((match) => {
+        const value = Number(match[0]);
+        if (!Number.isFinite(value) || !Number.isInteger(value)) {
+          return;
+        }
+        const colNo = normalizeColNo(value);
+        if (colNo > 0) {
+          cols.push(colNo);
+        }
+      });
+
+      return Array.from(new Set(cols)).sort((a, b) => a - b);
+    }
+
+    function parseImportLine(line, fallbackName) {
+      const source = String(line || "").trim();
+      if (!source) {
+        return null;
+      }
+
+      const cleaned = source.replace(/^\s*(?:[-*•]|\d+[.)、])\s*/, "").trim();
+      if (!cleaned) {
+        return null;
+      }
+
+      const firstDigitIndex = cleaned.search(/\d/);
+      let label = "";
+      if (firstDigitIndex > 0) {
+        label = cleaned
+          .slice(0, firstDigitIndex)
+          .replace(/[：:=，,;；\s]+$/g, "")
+          .trim();
+      }
+      if (!label) {
+        label = fallbackName ? String(fallbackName).trim() : "";
+      }
+
+      const bodyText = firstDigitIndex >= 0 ? cleaned.slice(firstDigitIndex) : cleaned;
+      const groups = [];
+
+      const keywordAmountRegex = /(?:金额|各|每个|每注|单注|=|x|X|\*)\s*([+-]?\d+(?:\.\d+)?)/g;
+      let cursor = 0;
+      let keywordMatch = null;
+      while ((keywordMatch = keywordAmountRegex.exec(bodyText)) !== null) {
+        const amount = Number(keywordMatch[1]);
+        if (!Number.isFinite(amount)) {
+          cursor = keywordMatch.index + keywordMatch[0].length;
+          continue;
+        }
+
+        const segmentText = bodyText.slice(cursor, keywordMatch.index);
+        const colNos = extractColsFromText(segmentText);
+        if (colNos.length > 0) {
+          groups.push({ colNos, amount });
+        }
+        cursor = keywordMatch.index + keywordMatch[0].length;
+      }
+
+      if (groups.length === 0) {
+        const amountInfo = detectAmountInfo(bodyText);
+        if (amountInfo) {
+          const amount = Number(amountInfo.amount);
+          const beforeText = bodyText.slice(0, amountInfo.start);
+          const afterText = bodyText.slice(amountInfo.end);
+          let colNos = extractColsFromText(beforeText);
+          if (colNos.length === 0) {
+            colNos = extractColsFromText(afterText);
           }
-          return { colNo, amount };
-        })
+          if (Number.isFinite(amount) && colNos.length > 0) {
+            groups.push({ colNos, amount });
+          }
+        }
+      }
+
+      if (groups.length === 0) {
+        const numberMatches = Array.from(bodyText.matchAll(/[+-]?\d+(?:\.\d+)?/g));
+        if (numberMatches.length >= 2) {
+          const lastMatch = numberMatches[numberMatches.length - 1];
+          const amount = Number(lastMatch[0]);
+          const prefix = bodyText.slice(0, lastMatch.index || 0);
+          const colNos = extractColsFromText(prefix);
+          if (Number.isFinite(amount) && colNos.length > 0) {
+            groups.push({ colNos, amount });
+          }
+        }
+      }
+
+      if (groups.length === 0) {
+        return {
+          error: true,
+          source
+        };
+      }
+
+      return {
+        error: false,
+        source,
+        label,
+        groups
+      };
+    }
+
+    function importRowsFromText() {
+      const rawText = smartImportInputEl.value.trim();
+      if (!rawText) {
+        window.alert("请先输入要解析的文本。");
+        smartImportInputEl.focus();
+        return;
+      }
+
+      const lines = rawText
+        .split(/\r?\n/)
+        .map((line) => line.trim())
         .filter(Boolean);
+      if (lines.length === 0) {
+        window.alert("请先输入要解析的文本。");
+        smartImportInputEl.focus();
+        return;
+      }
+
+      const fallbackName = rowLabelInputEl.value.trim();
+      const parsedRows = [];
+      const failedLines = [];
+
+      lines.forEach((line) => {
+        const parsed = parseImportLine(line, fallbackName);
+        if (!parsed || parsed.error) {
+          failedLines.push(line);
+          return;
+        }
+        parsedRows.push(parsed);
+      });
+
+      if (parsedRows.length === 0) {
+        window.alert("未识别到可导入的数据，请检查格式后重试。");
+        return;
+      }
+
+      let createdCount = 0;
+      let mergedCount = 0;
+      let parsedGroupCount = 0;
+      parsedRows.forEach((item, index) => {
+        const label = item.label || `用户${nextRowId + index}`;
+        const normalizedLabel = label.trim();
+        let targetRow = rowEntries.find((entry) => entry.label.trim() === normalizedLabel);
+        if (!targetRow) {
+          targetRow = {
+            id: nextRowId,
+            label: normalizedLabel,
+            groups: []
+          };
+          nextRowId += 1;
+          rowEntries.push(targetRow);
+          createdCount += 1;
+        } else {
+          mergedCount += 1;
+        }
+
+        item.groups.forEach((group) => {
+          parsedGroupCount += 1;
+          group.colNos.forEach((colNo) => {
+            appendGroupAmount(targetRow.groups, colNo, group.amount);
+          });
+        });
+        targetRow.groups = normalizeGroups(targetRow.groups);
+      });
+
+      updateAll();
+      saveData();
+      smartImportInputEl.value = "";
+
+      const failedCount = failedLines.length;
+      const failPreview = failedLines.slice(0, 2).join(" / ");
+      const summary = [
+        `成功导入 ${parsedRows.length} 行`,
+        `识别 ${parsedGroupCount} 组号码金额`,
+        `新建 ${createdCount} 行`,
+        `合并到已有用户 ${mergedCount} 行`
+      ];
+      if (failedCount > 0) {
+        summary.push(`失败 ${failedCount} 行`);
+        if (failPreview) {
+          summary.push(`示例：${failPreview}`);
+        }
+      }
+      window.alert(summary.join("，"));
+    }
+
+    function readEntryGroupsWithFallback(entry) {
+      let groups = normalizeGroups(entry && entry.groups);
+      if (groups.length > 0) {
+        return groups;
+      }
+
+      const rawCols = Array.isArray(entry && entry.colNos) ? entry.colNos : [entry && entry.colNo];
+      const amount = Number(entry && entry.amount);
+      if (!Number.isFinite(amount)) {
+        return [];
+      }
+
+      groups = rawCols
+        .map((rawCol) => normalizeColNo(rawCol))
+        .filter((colNo) => colNo > 0)
+        .map((colNo) => ({ colNo, amount }));
+      return normalizeGroups(groups);
+    }
+
+    function cloneRowEntries(rawEntries) {
+      if (!Array.isArray(rawEntries)) {
+        return [];
+      }
+
+      const result = [];
+      rawEntries.forEach((entry, index) => {
+        const groups = readEntryGroupsWithFallback(entry);
+        if (groups.length === 0) {
+          return;
+        }
+        const idCandidate = Number(entry && entry.id);
+        const rowId = Number.isFinite(idCandidate) && Math.trunc(idCandidate) > 0 ? Math.trunc(idCandidate) : index + 1;
+        result.push({
+          id: rowId,
+          label: entry && entry.label != null ? String(entry.label) : "",
+          groups: groups.map((group) => ({
+            colNo: group.colNo,
+            amount: group.amount
+          }))
+        });
+      });
+      return result;
+    }
+
+    function createEmptyPageState() {
+      return {
+        winningCol: "",
+        rowEntries: [],
+        draftRowLabel: "",
+        draftRowGroups: [],
+        draftSelectedCols: [],
+        rowValueInput: "",
+        nextRowId: 1,
+        nextDraftGroupId: 1,
+        rowInlineDraft: {
+          rowId: 0,
+          amountText: "",
+          selectedCols: []
+        }
+      };
+    }
+
+    function normalizePageState(rawState) {
+      const state = createEmptyPageState();
+      if (!rawState || typeof rawState !== "object") {
+        return state;
+      }
+
+      const winningCol = normalizeColNo(rawState.winningCol);
+      state.winningCol = winningCol > 0 ? String(winningCol) : "";
+
+      state.rowEntries = cloneRowEntries(rawState.rowEntries);
+      state.draftRowLabel = rawState.draftRowLabel == null ? "" : String(rawState.draftRowLabel);
+
+      const draftGroups = normalizeGroups(rawState.draftRowGroups);
+      state.draftRowGroups = draftGroups.map((group, index) => ({
+        id: index + 1,
+        colNo: group.colNo,
+        amount: group.amount
+      }));
+
+      const selectedCols = Array.isArray(rawState.draftSelectedCols) ? rawState.draftSelectedCols : [];
+      state.draftSelectedCols = Array.from(
+        new Set(
+          selectedCols
+            .map((rawCol) => normalizeColNo(rawCol))
+            .filter((colNo) => colNo > 0)
+        )
+      ).sort((a, b) => a - b);
+
+      if (rawState.rowValueInput != null) {
+        state.rowValueInput = String(rawState.rowValueInput);
+      }
+
+      const maxRowId = state.rowEntries.reduce((max, entry) => Math.max(max, entry.id), 0);
+      const nextRowCandidate = Math.trunc(Number(rawState.nextRowId));
+      if (Number.isFinite(nextRowCandidate) && nextRowCandidate > 0) {
+        state.nextRowId = Math.max(nextRowCandidate, maxRowId + 1);
+      } else {
+        state.nextRowId = Math.max(1, maxRowId + 1);
+      }
+
+      const maxDraftGroupId = state.draftRowGroups.reduce((max, group) => Math.max(max, group.id), 0);
+      const nextDraftCandidate = Math.trunc(Number(rawState.nextDraftGroupId));
+      if (Number.isFinite(nextDraftCandidate) && nextDraftCandidate > 0) {
+        state.nextDraftGroupId = Math.max(nextDraftCandidate, maxDraftGroupId + 1);
+      } else {
+        state.nextDraftGroupId = Math.max(1, maxDraftGroupId + 1);
+      }
+
+      if (rawState.rowInlineDraft && typeof rawState.rowInlineDraft === "object") {
+        const rawInline = rawState.rowInlineDraft;
+        const inlineRowId = Math.trunc(Number(rawInline.rowId));
+        if (Number.isFinite(inlineRowId) && inlineRowId > 0) {
+          state.rowInlineDraft.rowId = inlineRowId;
+        }
+        state.rowInlineDraft.amountText = rawInline.amountText == null ? "" : String(rawInline.amountText);
+
+        const inlineCols = Array.isArray(rawInline.selectedCols) ? rawInline.selectedCols : [];
+        state.rowInlineDraft.selectedCols = Array.from(
+          new Set(
+            inlineCols
+              .map((rawCol) => normalizeColNo(rawCol))
+              .filter((colNo) => colNo > 0)
+          )
+        ).sort((a, b) => a - b);
+      }
+
+      if (!state.rowEntries.some((entry) => entry.id === state.rowInlineDraft.rowId)) {
+        state.rowInlineDraft.rowId = 0;
+      }
+
+      return state;
+    }
+
+    function captureCurrentPageState() {
+      const winningCol = getWinningCol();
+      return {
+        winningCol: winningCol > 0 ? String(winningCol) : "",
+        rowEntries: rowEntries.map((entry) => ({
+          id: entry.id,
+          label: entry.label,
+          groups: entry.groups.map((group) => ({
+            colNo: group.colNo,
+            amount: group.amount
+          }))
+        })),
+        draftRowLabel: rowLabelInputEl.value,
+        draftRowGroups: draftRowGroups.map((group) => ({
+          id: group.id,
+          colNo: group.colNo,
+          amount: group.amount
+        })),
+        draftSelectedCols: getDraftSelectedColNos(),
+        rowValueInput: rowValueInputEl.value,
+        nextDraftGroupId,
+        nextRowId,
+        rowInlineDraft: {
+          rowId: rowInlineDraft.rowId,
+          amountText: rowInlineDraft.amountText,
+          selectedCols: getRowInlineSelectedColNos()
+        }
+      };
+    }
+
+    function applyPageState(stateInput) {
+      const state = normalizePageState(stateInput);
+
+      winningColEl.value = state.winningCol;
+      rowLabelInputEl.value = state.draftRowLabel;
+      rowValueInputEl.value = state.rowValueInput;
+
+      rowEntries.length = 0;
+      state.rowEntries.forEach((entry) => {
+        rowEntries.push({
+          id: entry.id,
+          label: entry.label,
+          groups: entry.groups.map((group) => ({
+            colNo: group.colNo,
+            amount: group.amount
+          }))
+        });
+      });
+
+      draftRowGroups.length = 0;
+      state.draftRowGroups.forEach((group) => {
+        draftRowGroups.push({
+          id: group.id,
+          colNo: group.colNo,
+          amount: group.amount
+        });
+      });
+
+      nextRowId = state.nextRowId;
+      nextDraftGroupId = state.nextDraftGroupId;
+
+      setDraftSelectedCols(state.draftSelectedCols, false);
+      setDraftColPickerOpen(false);
+
+      resetRowInlineDraft();
+      const inlineRowId = Math.trunc(Number(state.rowInlineDraft.rowId));
+      if (Number.isFinite(inlineRowId) && rowEntries.some((entry) => entry.id === inlineRowId)) {
+        rowInlineDraft.rowId = inlineRowId;
+      }
+      rowInlineDraft.amountText = state.rowInlineDraft.amountText || "";
+      state.rowInlineDraft.selectedCols.forEach((colNo) => {
+        rowInlineDraft.selectedCols.add(colNo);
+      });
+    }
+
+    function commitCurrentPageState() {
+      pageStates[currentPage] = captureCurrentPageState();
+    }
+
+    function serializePageStateForStorage(stateInput) {
+      const state = normalizePageState(stateInput);
+      return {
+        rowEntries: state.rowEntries.map((entry) => ({
+          id: entry.id,
+          label: entry.label,
+          groups: entry.groups.map((group) => ({
+            colNo: group.colNo,
+            amount: group.amount
+          }))
+        })),
+        draftRowLabel: state.draftRowLabel,
+        draftRowGroups: state.draftRowGroups.map((group) => ({
+          id: group.id,
+          colNo: group.colNo,
+          amount: group.amount
+        })),
+        draftSelectedCols: state.draftSelectedCols.slice(),
+        rowValueInput: state.rowValueInput,
+        nextDraftGroupId: state.nextDraftGroupId,
+        nextRowId: state.nextRowId,
+        rowInlineDraft: {
+          rowId: state.rowInlineDraft.rowId,
+          amountText: state.rowInlineDraft.amountText,
+          selectedCols: state.rowInlineDraft.selectedCols.slice()
+        }
+      };
+    }
+
+    function updatePageNavState() {
+      pageNavBtnEls.forEach((btn) => {
+        const pageNo = Number(btn.dataset.pageNo);
+        const isActive = pageNo === currentPage;
+        btn.classList.toggle("active", isActive);
+        btn.setAttribute("aria-selected", isActive ? "true" : "false");
+      });
+    }
+
+    function switchPage(pageNo) {
+      const targetPage = Math.trunc(Number(pageNo));
+      if ((targetPage !== 1 && targetPage !== 2) || targetPage === currentPage) {
+        return;
+      }
+
+      commitCurrentPageState();
+      currentPage = targetPage;
+      applyPageState(pageStates[currentPage] || createEmptyPageState());
+      updatePageNavState();
+      updateAll();
+      saveData();
     }
 
     function calcRowTotal(entry) {
@@ -1575,7 +2265,7 @@
         deleteBtn.type = "button";
         deleteBtn.className = "delete-group";
         deleteBtn.dataset.draftGroupId = String(group.id);
-        deleteBtn.textContent = "删";
+        deleteBtn.textContent = "\u5220";
 
         chip.appendChild(deleteBtn);
         currentGroupsListEl.appendChild(chip);
@@ -1646,7 +2336,7 @@
           removeBtn.className = "group-detail-remove";
           removeBtn.dataset.groupRemoveRow = String(entry.id);
           removeBtn.dataset.groupIndex = String(groupIndex);
-          removeBtn.title = "删除该号码";
+          removeBtn.title = "\u5220\u9664\u8BE5\u53F7\u7801";
           removeBtn.textContent = "×";
 
           groupItem.appendChild(colTag);
@@ -1757,22 +2447,17 @@
       const amount = Number(rawAmount);
 
       if (selectedColNos.length === 0) {
-        window.alert("请选择至少一个 1-49 的号码。");
+        window.alert("\u8BF7\u81F3\u5C11\u9009\u62E9\u4E00\u4E2A 1-49 \u53F7\u7801\u3002");
         return;
       }
 
       if (!rawAmount || !Number.isFinite(amount)) {
-        window.alert("请输入有效数字。");
+        window.alert("\u8BF7\u8F93\u5165\u6709\u6548\u6570\u5B57\u3002");
         return;
       }
 
       selectedColNos.forEach((colNo) => {
-        draftRowGroups.push({
-          id: nextDraftGroupId,
-          colNo,
-          amount
-        });
-        nextDraftGroupId += 1;
+        appendDraftGroupAmount(colNo, amount);
       });
       draftSelectedCols.clear();
       syncDraftColPicker();
@@ -1802,17 +2487,17 @@
     function addRowEntry() {
       const label = rowLabelInputEl.value.trim();
       if (draftRowGroups.length === 0) {
-        window.alert("请先添加至少一组列号+数字。");
+        window.alert("\u8BF7\u5148\u6DFB\u52A0\u81F3\u5C11\u4E00\u7EC4\u53F7\u7801+\u91D1\u989D\u3002");
         return;
       }
 
       const entry = {
         id: nextRowId,
         label,
-        groups: draftRowGroups.map((group) => ({
+        groups: normalizeGroups(draftRowGroups.map((group) => ({
           colNo: group.colNo,
           amount: group.amount
-        }))
+        })))
       };
       nextRowId += 1;
       rowEntries.push(entry);
@@ -1834,8 +2519,8 @@
 
       const entry = rowEntries[targetIndex];
       const rowNo = targetIndex + 1;
-      const namePart = entry && entry.label ? `（${entry.label}）` : "";
-      const message = `确定删除第${rowNo}条${namePart}吗？删除后不可恢复。`;
+      const namePart = entry && entry.label ? `\uFF08${entry.label}\uFF09` : "";
+      const message = `\u786E\u5B9A\u5220\u9664\u7B2C ${rowNo} \u6761${namePart}\u5417\uFF1F\u5220\u9664\u540E\u4E0D\u53EF\u6062\u590D\u3002`;
       if (!window.confirm(message)) {
         return;
       }
@@ -1861,8 +2546,8 @@
       const group = entry.groups[groupIndex];
       const groupText = `${group.colNo} = ${format(group.amount)}`;
       const message = entry.groups.length === 1
-        ? `确定删除「${groupText}」吗？删除后该条记录会一并移除。`
-        : `确定删除「${groupText}」吗？`;
+        ? `\u786E\u5B9A\u5220\u9664\u300C${groupText}\u300D\u5417\uFF1F\u5220\u9664\u540E\u8BE5\u6761\u8BB0\u5F55\u4F1A\u4E00\u5E76\u79FB\u9664\u3002`
+        : `\u786E\u5B9A\u5220\u9664\u300C${groupText}\u300D\u5417\uFF1F`;
       if (!window.confirm(message)) {
         return;
       }
@@ -1879,24 +2564,16 @@
       updateAll();
       saveData();
     }
-
     function saveData() {
+      commitCurrentPageState();
       const payload = {
         rebateRate: FIXED_REBATE_RATE,
         multiplier: FIXED_MULTIPLIER,
-        rowEntries: rowEntries.map((entry) => ({
-          id: entry.id,
-          label: entry.label,
-          groups: entry.groups
-        })),
-        draftRowLabel: rowLabelInputEl.value,
-        draftRowGroups: draftRowGroups.map((group) => ({
-          id: group.id,
-          colNo: group.colNo,
-          amount: group.amount
-        })),
-        nextDraftGroupId,
-        nextRowId
+        currentPage,
+        pages: {
+          1: serializePageStateForStorage(pageStates[1]),
+          2: serializePageStateForStorage(pageStates[2])
+        }
       };
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
@@ -1906,85 +2583,45 @@
     }
 
     function restoreData() {
+      pageStates[1] = createEmptyPageState();
+      pageStates[2] = createEmptyPageState();
+
       let raw = "";
       try {
         raw = localStorage.getItem(STORAGE_KEY);
       } catch (e) {
         console.error("localStorage 读取失败", e);
+        applyPageState(pageStates[currentPage]);
+        updatePageNavState();
         return;
       }
 
-      if (!raw) {
-        return;
-      }
+      if (raw) {
+        let data = null;
+        try {
+          data = JSON.parse(raw);
+        } catch (e) {
+          data = null;
+        }
 
-      let data = null;
-      try {
-        data = JSON.parse(raw);
-      } catch (e) {
-        return;
-      }
-
-      if (!data || typeof data !== "object") {
-        return;
-      }
-
-      winningColEl.value = "";
-
-      if (Array.isArray(data.rowEntries)) {
-        let maxRowId = 0;
-        data.rowEntries.forEach((entry) => {
-          let groups = normalizeGroups(entry && entry.groups);
-          if (groups.length === 0) {
-            const rawCols = Array.isArray(entry && entry.colNos) ? entry.colNos : [entry && entry.colNo];
-            const amount = Number(entry && entry.amount);
-            if (Number.isFinite(amount)) {
-              groups = rawCols
-                .map((rawCol) => normalizeColNo(rawCol))
-                .filter((colNo) => colNo > 0)
-                .map((colNo) => ({ colNo, amount }));
-            }
+        if (data && typeof data === "object") {
+          if (data.pages && typeof data.pages === "object") {
+            pageStates[1] = normalizePageState(data.pages[1]);
+            pageStates[2] = normalizePageState(data.pages[2]);
+            const savedPage = Math.trunc(Number(data.currentPage));
+            currentPage = savedPage === 2 ? 2 : 1;
+          } else {
+            pageStates[1] = normalizePageState(data);
+            pageStates[2] = createEmptyPageState();
+            currentPage = 1;
           }
-
-          const idCandidate = Number(entry.id);
-          const rowId = Number.isFinite(idCandidate) && Math.trunc(idCandidate) > 0 ? Math.trunc(idCandidate) : nextRowId;
-          if (groups.length > 0) {
-            rowEntries.push({
-              id: rowId,
-              label: entry.label == null ? "" : String(entry.label),
-              groups
-            });
-            maxRowId = Math.max(maxRowId, rowId);
-          }
-        });
-        nextRowId = Math.max(nextRowId, maxRowId + 1);
+        }
       }
 
-      if (data.draftRowLabel != null) {
-        rowLabelInputEl.value = String(data.draftRowLabel);
-      }
-
-      if (Array.isArray(data.draftRowGroups)) {
-        const groups = normalizeGroups(data.draftRowGroups);
-        groups.forEach((group, index) => {
-          draftRowGroups.push({
-            id: index + 1,
-            colNo: group.colNo,
-            amount: group.amount
-          });
-        });
-        nextDraftGroupId = draftRowGroups.length + 1;
-      }
-
-      if (Number.isFinite(Number(data.nextDraftGroupId))) {
-        nextDraftGroupId = Math.max(nextDraftGroupId, Math.max(1, Math.trunc(Number(data.nextDraftGroupId))));
-      }
-
-      if (Number.isFinite(Number(data.nextRowId))) {
-        nextRowId = Math.max(nextRowId, Math.trunc(Number(data.nextRowId)));
-      }
-
-      syncDraftColPicker();
+      pageStates[1].winningCol = "";
+      pageStates[2].winningCol = "";
+      applyPageState(pageStates[currentPage]);
+      updatePageNavState();
     }
 
     function createColumns() {
@@ -2045,14 +2682,16 @@
       if (!isDesktop) {
         columnRowsViewportEl.classList.remove("collapsed");
         toggleColumnRowsBtnEl.setAttribute("aria-expanded", "true");
-        toggleColumnRowsTextEl.textContent = "展开剩余行";
+        toggleColumnRowsTextEl.textContent = "\u5C55\u5F00\u5269\u4F59\u884C";
         return;
       }
 
       columnRowsViewportEl.classList.toggle("collapsed", isColumnRowsCollapsed);
       const expanded = !isColumnRowsCollapsed;
       toggleColumnRowsBtnEl.setAttribute("aria-expanded", String(expanded));
-      toggleColumnRowsTextEl.textContent = expanded ? "收起剩余行" : "展开剩余行";
+      toggleColumnRowsTextEl.textContent = expanded
+        ? "\u6536\u8D77\u5269\u4F59\u884C"
+        : "\u5C55\u5F00\u5269\u4F59\u884C";
     }
 
     function toggleColumnRowsFold() {
@@ -2107,22 +2746,14 @@
     }
 
     function clearAllData() {
-      if (!window.confirm("确定要清空所有数据吗？")) {
+      if (!window.confirm(`\u786E\u5B9A\u8981\u6E05\u7A7A\u7B2C ${currentPage} \u9875\u7684\u5168\u90E8\u6570\u636E\u5417\uFF1F`)) {
         return;
       }
 
-      winningColEl.value = "";
-      rowLabelInputEl.value = "";
-      setDraftSelectedCols([], false);
-      rowValueInputEl.value = "";
-      clearDraftRow();
-      resetRowInlineDraft();
-      rowEntries.length = 0;
-      nextRowId = 1;
-      nextDraftGroupId = 1;
-
-      localStorage.removeItem(STORAGE_KEY);
+      pageStates[currentPage] = createEmptyPageState();
+      applyPageState(pageStates[currentPage]);
       updateAll();
+      saveData();
     }
 
     winningColEl.addEventListener("input", () => {
@@ -2135,6 +2766,15 @@
         event.preventDefault();
         tryEnterPage();
       }
+    });
+    pageNavBtnEls.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const pageNo = Math.trunc(Number(btn.dataset.pageNo));
+        if (!Number.isFinite(pageNo)) {
+          return;
+        }
+        switchPage(pageNo);
+      });
     });
     rowLabelInputEl.addEventListener("input", saveData);
     rowColTriggerEl.addEventListener("click", () => {
@@ -2173,6 +2813,13 @@
     clearDataBtnEl.addEventListener("click", clearAllData);
     addPairBtnEl.addEventListener("click", addDraftGroup);
     addRowBtnEl.addEventListener("click", addRowEntry);
+    smartImportBtnEl.addEventListener("click", importRowsFromText);
+    smartImportInputEl.addEventListener("keydown", (event) => {
+      if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+        event.preventDefault();
+        importRowsFromText();
+      }
+    });
     currentGroupsListEl.addEventListener("click", (event) => {
       const deleteBtn = event.target.closest("button[data-draft-group-id]");
       if (!deleteBtn) {
@@ -2297,3 +2944,4 @@
   </script>
 </body>
 </html>
+
