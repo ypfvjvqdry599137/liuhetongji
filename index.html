@@ -1024,7 +1024,7 @@
   </style>
 </head>
 <body>
-  <div id="authScreen" class="auth-screen">
+  <div id="authScreen" class="auth-screen hidden">
     <div class="auth-card">
       <h2 class="auth-title">请输入访问密码</h2>
       <div class="auth-subtitle">验证通过后才可进入统计页面</div>
@@ -1037,7 +1037,7 @@
     </div>
   </div>
 
-  <div id="appRoot" class="page page-locked">
+  <div id="appRoot" class="page">
     <h1>统计工具</h1>
     <div class="page-subtitle">数据录入、分组计算与结果追踪一体化面板</div>
 
@@ -1147,6 +1147,7 @@
 
   <script>
     const COL_COUNT = 49;
+    const ACCESS_PASSWORD = "";
     const FIXED_REBATE_RATE = 0.036;
     const FIXED_MULTIPLIER = 47;
     const STORAGE_KEY = "rebate_tool_data_v1";
@@ -1217,7 +1218,7 @@
 
     function tryEnterPage() {
       const inputPassword = authPasswordEl.value;
-      if (inputPassword === ACCESS_PASSWORD) {
+      if (!ACCESS_PASSWORD || inputPassword === ACCESS_PASSWORD) {
         unlockPage();
         return;
       }
@@ -2040,8 +2041,12 @@
     updateAll();
     updateColumnRowsCollapsedHeight();
     applyColumnRowsFoldState();
-    authPasswordEl.focus();
+    if (ACCESS_PASSWORD) {
+      authPasswordEl.focus();
+    } else {
+      unlockPage();
+    }
   </script>
-<script src="/auth-guard.js"></script>
+  <script src="/auth-guard.js"></script>
 </body>
 </html>
