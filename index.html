@@ -321,24 +321,28 @@
 
     .multi-col-menu {
       position: absolute;
-      z-index: 15;
+      z-index: 3000;
       left: 0;
-      right: 0;
-      top: calc(100% + 6px);
-      max-height: 220px;
+      right: auto;
+      bottom: calc(100% + 6px);
+      width: min(760px, calc(100vw - 16px));
+      min-width: 100%;
+      max-height: min(280px, calc(100vh - 140px));
       overflow-y: auto;
+      scrollbar-gutter: stable;
       border: 1px solid #bfdbfe;
       border-radius: 10px;
       background: #ffffff;
       box-shadow: 0 14px 26px rgba(15, 23, 42, 0.15);
-      padding: 6px;
+      padding: 4px;
       display: none;
     }
 
     .multi-col-picker.open .multi-col-menu {
       display: grid;
-      grid-template-columns: repeat(7, minmax(0, 1fr));
-      gap: 6px;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      align-content: start;
+      gap: 4px;
     }
 
     .multi-col-option {
@@ -346,7 +350,8 @@
       border-radius: 8px;
       background: #f8fbff;
       color: #334155;
-      font-size: 13px;
+      font-size: 14px;
+      font-weight: 600;
       height: 30px;
       padding: 0 6px;
       cursor: pointer;
@@ -1000,6 +1005,91 @@
       border-color: #60a5fa;
     }
 
+    .row-inline-editor {
+      margin-top: 8px;
+      width: min(760px, 100%);
+      border: 1px dashed #93c5fd;
+      border-radius: 12px;
+      background: #f8fbff;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .row-inline-editor-top {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      justify-content: center;
+    }
+
+    .row-inline-amount-input {
+      width: 130px;
+      height: 30px;
+      border: 1px solid #bfdbfe;
+      border-radius: 8px;
+      background: #ffffff;
+      color: #0f172a;
+      font-size: 13px;
+      padding: 0 8px;
+    }
+
+    .row-inline-amount-input:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.16);
+    }
+
+    .row-inline-action-btn {
+      height: 30px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 0 10px;
+      cursor: pointer;
+      border: 1px solid #93c5fd;
+      background: #ffffff;
+      color: #1d4ed8;
+    }
+
+    .row-inline-action-btn.primary {
+      border-color: #2563eb;
+      background: #2563eb;
+      color: #ffffff;
+    }
+
+    .row-inline-col-grid {
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: 4px;
+    }
+
+    .row-inline-col-btn {
+      border: 1px solid #dbeafe;
+      border-radius: 8px;
+      background: #ffffff;
+      color: #334155;
+      font-size: 12px;
+      font-weight: 600;
+      height: 27px;
+      cursor: pointer;
+      transition: all 0.16s ease;
+    }
+
+    .row-inline-col-btn:hover {
+      border-color: #93c5fd;
+      background: #eff6ff;
+      color: #1e3a8a;
+    }
+
+    .row-inline-col-btn.selected {
+      border-color: #2563eb;
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
     .table-empty {
       color: var(--muted);
     }
@@ -1192,6 +1282,11 @@
     const columnValueEls = [];
     const rowEntries = [];
     const draftRowGroups = [];
+    const rowInlineDraft = {
+      rowId: 0,
+      amountText: "",
+      selectedCols: new Set()
+    };
     const draftSelectedCols = new Set();
     let nextRowId = 1;
     let nextDraftGroupId = 1;
@@ -1357,6 +1452,73 @@
       syncDraftColPicker();
     }
 
+    function getRowInlineSelectedColNos() {
+      return Array.from(rowInlineDraft.selectedCols).sort((a, b) => a - b);
+    }
+
+    function resetRowInlineDraft() {
+      rowInlineDraft.rowId = 0;
+      rowInlineDraft.amountText = "";
+      rowInlineDraft.selectedCols.clear();
+    }
+
+    function openRowInlineEditor(rowId) {
+      if (rowInlineDraft.rowId === rowId) {
+        resetRowInlineDraft();
+      } else {
+        resetRowInlineDraft();
+        rowInlineDraft.rowId = rowId;
+      }
+      renderRowEntries();
+    }
+
+    function toggleRowInlineCol(colNo) {
+      if (rowInlineDraft.selectedCols.has(colNo)) {
+        rowInlineDraft.selectedCols.delete(colNo);
+      } else {
+        rowInlineDraft.selectedCols.add(colNo);
+      }
+      renderRowEntries();
+    }
+
+    function setRowInlineAmount(value) {
+      rowInlineDraft.amountText = String(value || "");
+    }
+
+    function confirmAddGroupToRowFromInline() {
+      const rowId = rowInlineDraft.rowId;
+      const rowIndex = rowEntries.findIndex((entry) => entry.id === rowId);
+      if (rowIndex < 0) {
+        resetRowInlineDraft();
+        renderRowEntries();
+        return;
+      }
+
+      const selectedColNos = getRowInlineSelectedColNos();
+      if (selectedColNos.length === 0) {
+        window.alert("请选择至少一个 1-49 的号码。");
+        return;
+      }
+
+      const amountText = rowInlineDraft.amountText.trim();
+      const amount = Number(amountText);
+      if (!amountText || !Number.isFinite(amount)) {
+        window.alert("请输入有效金额。");
+        return;
+      }
+
+      selectedColNos.forEach((colNo) => {
+        rowEntries[rowIndex].groups.push({
+          colNo,
+          amount
+        });
+      });
+
+      resetRowInlineDraft();
+      updateAll();
+      saveData();
+    }
+
     function normalizeGroups(rawGroups) {
       if (!Array.isArray(rawGroups)) {
         return [];
@@ -1496,8 +1658,61 @@
         addGroupBtn.type = "button";
         addGroupBtn.className = "group-inline-add";
         addGroupBtn.dataset.rowAddGroup = String(entry.id);
-        addGroupBtn.textContent = "+ 添加";
+        addGroupBtn.textContent = rowInlineDraft.rowId === entry.id ? "收起" : "+ 添加";
         groupsWrap.appendChild(addGroupBtn);
+
+        if (rowInlineDraft.rowId === entry.id) {
+          const editor = document.createElement("div");
+          editor.className = "row-inline-editor";
+
+          const editorTop = document.createElement("div");
+          editorTop.className = "row-inline-editor-top";
+
+          const amountInput = document.createElement("input");
+          amountInput.type = "number";
+          amountInput.step = "any";
+          amountInput.className = "row-inline-amount-input";
+          amountInput.placeholder = "金额";
+          amountInput.value = rowInlineDraft.amountText;
+          amountInput.dataset.rowInlineAmount = String(entry.id);
+
+          const confirmBtn = document.createElement("button");
+          confirmBtn.type = "button";
+          confirmBtn.className = "row-inline-action-btn primary";
+          confirmBtn.dataset.rowInlineConfirm = String(entry.id);
+          confirmBtn.textContent = "确认添加";
+
+          const cancelBtn = document.createElement("button");
+          cancelBtn.type = "button";
+          cancelBtn.className = "row-inline-action-btn";
+          cancelBtn.dataset.rowInlineCancel = String(entry.id);
+          cancelBtn.textContent = "取消";
+
+          editorTop.appendChild(amountInput);
+          editorTop.appendChild(confirmBtn);
+          editorTop.appendChild(cancelBtn);
+
+          const colGrid = document.createElement("div");
+          colGrid.className = "row-inline-col-grid";
+          const selectedCols = rowInlineDraft.selectedCols;
+          for (let colNo = 1; colNo <= COL_COUNT; colNo += 1) {
+            const colBtn = document.createElement("button");
+            colBtn.type = "button";
+            colBtn.className = "row-inline-col-btn";
+            if (selectedCols.has(colNo)) {
+              colBtn.classList.add("selected");
+            }
+            colBtn.dataset.rowInlineCol = String(colNo);
+            colBtn.dataset.rowInlineTarget = String(entry.id);
+            colBtn.textContent = String(colNo);
+            colGrid.appendChild(colBtn);
+          }
+
+          editor.appendChild(editorTop);
+          editor.appendChild(colGrid);
+          groupsWrap.appendChild(editor);
+        }
+
         groupsTd.appendChild(groupsWrap);
 
         const rowTotalTd = document.createElement("td");
@@ -1559,6 +1774,9 @@
         });
         nextDraftGroupId += 1;
       });
+      draftSelectedCols.clear();
+      syncDraftColPicker();
+      setDraftColPickerOpen(false);
       rowValueInputEl.value = "";
       renderDraftGroups();
       saveData();
@@ -1623,6 +1841,9 @@
       }
 
       rowEntries.splice(targetIndex, 1);
+      if (rowInlineDraft.rowId === rowId) {
+        resetRowInlineDraft();
+      }
       updateAll();
       saveData();
     }
@@ -1648,45 +1869,13 @@
 
       if (entry.groups.length === 1) {
         rowEntries.splice(rowIndex, 1);
+        if (rowInlineDraft.rowId === rowId) {
+          resetRowInlineDraft();
+        }
       } else {
         entry.groups.splice(groupIndex, 1);
       }
 
-      updateAll();
-      saveData();
-    }
-
-    function addGroupToRow(rowId) {
-      const rowIndex = rowEntries.findIndex((entry) => entry.id === rowId);
-      if (rowIndex < 0) {
-        return;
-      }
-
-      const colRaw = window.prompt("请输入号码（1-49）：");
-      if (colRaw == null) {
-        return;
-      }
-      const colNo = normalizeColNo(colRaw);
-      if (!colNo) {
-        window.alert("号码必须是 1-49。");
-        return;
-      }
-
-      const amountRaw = window.prompt("请输入金额：");
-      if (amountRaw == null) {
-        return;
-      }
-      const amountText = String(amountRaw).trim();
-      const amount = Number(amountText);
-      if (!amountText || !Number.isFinite(amount)) {
-        window.alert("请输入有效金额。");
-        return;
-      }
-
-      rowEntries[rowIndex].groups.push({
-        colNo,
-        amount
-      });
       updateAll();
       saveData();
     }
@@ -1927,6 +2116,7 @@
       setDraftSelectedCols([], false);
       rowValueInputEl.value = "";
       clearDraftRow();
+      resetRowInlineDraft();
       rowEntries.length = 0;
       nextRowId = 1;
       nextDraftGroupId = 1;
@@ -1995,6 +2185,38 @@
       removeDraftGroup(groupId);
     });
     rowResultBodyEl.addEventListener("click", (event) => {
+      const inlineColBtn = event.target.closest("button[data-row-inline-col]");
+      if (inlineColBtn) {
+        const targetRowId = Number(inlineColBtn.dataset.rowInlineTarget);
+        const colNo = Number(inlineColBtn.dataset.rowInlineCol);
+        if (!Number.isFinite(targetRowId) || !Number.isFinite(colNo) || rowInlineDraft.rowId !== targetRowId) {
+          return;
+        }
+        toggleRowInlineCol(normalizeColNo(colNo));
+        return;
+      }
+
+      const inlineConfirmBtn = event.target.closest("button[data-row-inline-confirm]");
+      if (inlineConfirmBtn) {
+        const rowId = Number(inlineConfirmBtn.dataset.rowInlineConfirm);
+        if (!Number.isFinite(rowId) || rowInlineDraft.rowId !== rowId) {
+          return;
+        }
+        confirmAddGroupToRowFromInline();
+        return;
+      }
+
+      const inlineCancelBtn = event.target.closest("button[data-row-inline-cancel]");
+      if (inlineCancelBtn) {
+        const rowId = Number(inlineCancelBtn.dataset.rowInlineCancel);
+        if (!Number.isFinite(rowId) || rowInlineDraft.rowId !== rowId) {
+          return;
+        }
+        resetRowInlineDraft();
+        renderRowEntries();
+        return;
+      }
+
       const removeGroupBtn = event.target.closest("button[data-group-remove-row]");
       if (removeGroupBtn) {
         const rowId = Number(removeGroupBtn.dataset.groupRemoveRow);
@@ -2012,7 +2234,7 @@
         if (!Number.isFinite(rowId)) {
           return;
         }
-        addGroupToRow(rowId);
+        openRowInlineEditor(rowId);
         return;
       }
 
@@ -2025,6 +2247,32 @@
         return;
       }
       removeRowEntry(rowId);
+    });
+    rowResultBodyEl.addEventListener("input", (event) => {
+      const amountInput = event.target.closest("input[data-row-inline-amount]");
+      if (!amountInput) {
+        return;
+      }
+      const rowId = Number(amountInput.dataset.rowInlineAmount);
+      if (!Number.isFinite(rowId) || rowInlineDraft.rowId !== rowId) {
+        return;
+      }
+      setRowInlineAmount(amountInput.value);
+    });
+    rowResultBodyEl.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter") {
+        return;
+      }
+      const amountInput = event.target.closest("input[data-row-inline-amount]");
+      if (!amountInput) {
+        return;
+      }
+      const rowId = Number(amountInput.dataset.rowInlineAmount);
+      if (!Number.isFinite(rowId) || rowInlineDraft.rowId !== rowId) {
+        return;
+      }
+      event.preventDefault();
+      confirmAddGroupToRowFromInline();
     });
     rowValueInputEl.addEventListener("keydown", (event) => {
       if (event.key === "Enter") {
