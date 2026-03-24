@@ -1,5 +1,5 @@
-const COOKIE_NAME = "stat_auth";
-const COOKIE_MAX_AGE = 60 * 60 * 12;
+﻿const COOKIE_NAME = "stat_auth";
+const COOKIE_MAX_AGE = 60 * 60 * 3;
 
 function sanitizeNext(rawNext) {
   const next = typeof rawNext === "string" ? rawNext.trim() : "";
@@ -49,3 +49,4 @@ exports.handler = async (event) => {
     body: ""
   };
 };
+
