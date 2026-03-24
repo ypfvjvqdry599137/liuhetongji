@@ -10,3 +10,6 @@
   from = "/login"
   to = "/login.html"
   status = 200
+[[edge_functions]]
+  path = "/*"
+  function = "auth-guard"
